@@ -1,0 +1,21 @@
+<idea-plugin>
+    <id>com.example.demo</id>
+    <name>Demo</name>
+    <vendor email="israelmanor11@.com" url="https://www.appsflyer.com">appsflyer</vendor>
+    <description><![CDATA[
+    This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
+    <em>Supports various log filtering options.</em>
+    ]]></description>
+    <depends>com.intellij.modules.platform</depends>
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+    <actions>
+        <action id="HelloWorldAction"
+                class="com.example.plugin.LogColorizePlugin"
+                text="Print Hello World"
+                description="Print Hello World to the console">
+        <add-to-group group-id="ToolsMenu"/>
+            <keyboard-shortcut first-keystroke="command option j" keymap="macOS System Shortcuts"/>
+        </action>
+    </actions>
+</idea-plugin>
