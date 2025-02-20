@@ -6,6 +6,7 @@
     This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
     <em>Supports various log filtering options.</em>
     ]]></description>
+    <idea-version since-build="AI-211" until-build="AI-223.*" />
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
     </extensions>

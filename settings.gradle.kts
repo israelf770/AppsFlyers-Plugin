@@ -1,7 +1,8 @@
 pluginManagement {
     repositories {
         mavenCentral()
-        gradlePluginPortal()
+        gradlePluginPortal() // נדרש לפלאגינים
+        google() // נדרש לפלאגינים של Android
     }
 }
 

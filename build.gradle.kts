@@ -1,13 +1,16 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.25"
-    id("org.jetbrains.intellij") version "1.17.4"
+    id("org.jetbrains.intellij.platform") version "2.2.1"
+    id("com.android.application") version "8.2.1" //בשביל אפליקצייה
+//    id("com.android.library") version "8.8.0" // בשביל ספרייה
+    id("org.jetbrains.kotlin.android") version "2.1.10" // עדכן לגרסה העדכנית המומלצת
 }
 
 group = "com.example"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    google()
     mavenCentral()
 }
 
@@ -18,10 +21,9 @@ dependencies {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2024.1.7")
-    type.set("IC") // Target IDE Platform
-
-    plugins.set(listOf(/* Plugin Dependencies */))
+    version.set("2024.2.4") // IntelliJ Community Edition
+    type.set("AI") // גרסה תואמת ל-Android Studio
+    plugins.set(listOf("android")) // תוסף Android
 }
 
 tasks {
