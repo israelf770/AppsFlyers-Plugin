@@ -10,12 +10,9 @@
     <extensions defaultExtensionNs="com.intellij">
     </extensions>
     <actions>
-        <action id="HelloWorldAction"
-                class="com.example.plugin.LogColorizePlugin"
-                text="Print Hello World"
-                description="Print Hello World to the console">
-        <add-to-group group-id="ToolsMenu"/>
-            <keyboard-shortcut first-keystroke="command option j" keymap="macOS System Shortcuts"/>
+        <action id="com.example.plugin.StartLogcatAction" class="com.example.plugin.StartLogcatAction"
+                text="Start Logcat Listener" description="Starts listening to Logcat output">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>
