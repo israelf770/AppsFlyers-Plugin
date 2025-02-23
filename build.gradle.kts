@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-
+    implementation("com.google.code.gson:gson:2.8.9")
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -20,7 +20,6 @@ dependencies {
 intellij {
     version.set("2024.1.7")
     type.set("IC") // Target IDE Platform
-
     plugins.set(listOf(/* Plugin Dependencies */))
 }
 
