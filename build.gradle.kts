@@ -9,8 +9,8 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    google()
 }
-
 dependencies {
 
 }
@@ -18,11 +18,15 @@ dependencies {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2024.1.7")
-    type.set("IC") // Target IDE Platform
+    version = "2018.1.6"  // Use the appropriate version
 
     plugins.set(listOf(/* Plugin Dependencies */))
 }
+
+tasks.runIde {
+    ideDir.set(file("/Applications/Android Studio.app/Contents")) // Replace with actual path
+}
+
 
 tasks {
     // Set the JVM compatibility versions

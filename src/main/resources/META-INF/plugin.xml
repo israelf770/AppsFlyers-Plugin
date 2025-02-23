@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>com.example.demo</id>
-    <name>Demo</name>
+    <name>Catch Logcat plagin</name>
     <vendor email="israelmanor11@.com" url="https://www.appsflyer.com">appsflyer</vendor>
     <description><![CDATA[
     This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
