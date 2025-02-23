@@ -19,7 +19,6 @@ dependencies {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version = "2018.1.6"  // Use the appropriate version
     version.set("2024.1.7")
     type.set("IC") // Target IDE Platform
     plugins.set(listOf(/* Plugin Dependencies */))

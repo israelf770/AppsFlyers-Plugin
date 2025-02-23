@@ -11,6 +11,7 @@
     <!-- Keep only IntelliJ Platform dependency -->
     <depends>com.intellij.modules.platform</depends>
 
+    <!-- Notification group definition -->
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
     </extensions>
