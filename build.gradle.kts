@@ -11,8 +11,9 @@ repositories {
     mavenCentral()
     google()
 }
-dependencies {
 
+dependencies {
+    implementation("com.google.code.gson:gson:2.8.9")
 }
 
 // Configure Gradle IntelliJ Plugin

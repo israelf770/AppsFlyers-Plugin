@@ -1,17 +1,29 @@
 <idea-plugin>
-    <id>com.example.demo</id>
-    <name>Catch Logcat plagin</name>
+    <id>com.example.plugin</id>
+    <name>Logcat</name>
     <vendor email="israelmanor11@.com" url="https://www.appsflyer.com">appsflyer</vendor>
+
     <description><![CDATA[
     This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
     <em>Supports various log filtering options.</em>
     ]]></description>
-    <depends>com.intellij.modules.platform</depends>
+
+    <!-- Keep only IntelliJ Platform dependency -->
+    <depends>com.intellij.modules.lang</depends>
+
     <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
     </extensions>
+
+    <applicationListeners>
+        <listener class="com.example.plugin.LogcatStartup" topic="com.intellij.openapi.startup.StartupActivity"/>
+    </applicationListeners>
+
     <actions>
-        <action id="com.example.plugin.StartLogcatAction" class="com.example.plugin.StartLogcatAction"
-                text="Start Logcat Listener" description="Starts listening to Logcat output">
+        <action id="com.example.plugin.StartLogcatAction"
+                class="com.example.plugin.StartLogcatAction"
+                text="Start Logcat Listener"
+                description="Starts listening to Logcat output">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
