@@ -30,10 +30,29 @@ public class LogcatProcessHandler {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
-                if (text.contains("CONVERSION-") || text.contains("LAUNCH-")) {
+                if (text.contains("CONVERSION-")) {
                     String formattedLog = LogUtils.extractKeyValueFromLog(text);
+                    String date = text.substring(0, 14);
                     if (formattedLog != null) {
-                        LogPopup.showPopup(formattedLog);
+                        LogPopup.showPopup(date+"/ CONVERSION: "+formattedLog);
+                    }
+                    if(text.contains("result:")){
+                        int resIndex = text.indexOf("result");
+                        LogPopup.showPopup(date +"/ CONVERSION: "+text.substring(resIndex));
+                    }
+                }
+                if (text.contains("LAUNCH-")) {
+                    String formattedLog = LogUtils.extractKeyValueFromLog(text);
+                    String date = text.substring(0, 14);
+                    if (text.contains("new task added: LAUNCH")){
+                        LogPopup.showPopup("new task added: LAUNCH");
+                    }
+                    if(text.contains("result:")){
+                        int resIndex = text.indexOf("result");
+                        LogPopup.showPopup(date+"/ LAUNCH: "+text.substring(resIndex));
+                    }
+                    if (formattedLog != null) {
+                        LogPopup.showPopup(date+"/ LAUNCH "+formattedLog);
                     }
                 }
             }

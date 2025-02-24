@@ -2,14 +2,7 @@ package com.example.plugin;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.openapi.util.Key;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.openapi.diagnostic.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.datatransfer.StringSelection;
@@ -38,7 +31,6 @@ public class LogUtils {
         }
     }
 
-
     public static JButton createCopyButton(String log) {
         JButton copyButton = new JButton("Copy");
         copyButton.addActionListener(e -> copyToClipboard(log));
@@ -58,7 +50,6 @@ public class LogUtils {
     }
 
 
-    // ואז בקוד שלך
     private static void closePopup() {
         if (LogPopup.getPopup() != null) {
             LogPopup.getPopup().cancel();

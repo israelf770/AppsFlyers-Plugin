@@ -16,6 +16,7 @@ import java.util.List;
 public class LogPopup {
     private static final List<String> displayedLogs = new ArrayList<>();
     private static JBPopup popup;
+    private static JPanel logPanel = new JPanel(); // 🔥 הגדרת לוח הלוגים כשדה גלובלי
 
     public static void setPopup(JBPopup newPopup) {
         popup = newPopup;
@@ -25,13 +26,23 @@ public class LogPopup {
     }
 
     public static void showPopup(String formattedLogText) {
-        if (!displayedLogs.contains(formattedLogText)) {
+        if (formattedLogText.equals("new task added: LAUNCH")){
+            displayedLogs.clear();
+            displayedLogs.add("clear");
+        }else if (!displayedLogs.contains(formattedLogText)) {
             displayedLogs.add(formattedLogText);
         }
+        if(null == popup) {
+            createPopup();
+        } else {
+            updateLogPanel();
+        }
+    }
 
-        JPanel logPanel = createLogPanel();
+    private static void createPopup(){
+        logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
+        logPanel.setBackground(new JBColor(new Color(30, 30, 30), new Color(30, 30, 30)));
 
-        // הגדרת הפופ-אפ
         JScrollPane scrollPane = new JScrollPane(logPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -45,20 +56,22 @@ public class LogPopup {
                 .createPopup());
 
         SwingUtilities.invokeLater(popup::showInFocusCenter);
+        updateLogPanel();
     }
 
-    private static JPanel createLogPanel() {
-        JPanel logPanel = new JPanel();
-        logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
-        logPanel.setBackground(new JBColor(new Color(30, 30, 30), new Color(30, 30, 30)));
+    private static void updateLogPanel() {
+        if (popup == null) return; // 🔥 מוודא שהפופ-אפ קיים
+
+        logPanel.removeAll(); // 🔥 מנקה את כל הלוגים הקודמים
 
         for (String log : displayedLogs) {
             JPanel entryPanel = createLogEntryPanel(log);
             logPanel.add(entryPanel);
-            logPanel.add(Box.createVerticalStrut(10)); // Spacing between logs
+            logPanel.add(Box.createVerticalStrut(10)); // מרווחים בין לוגים
         }
 
-        return logPanel;
+        logPanel.revalidate();
+        logPanel.repaint();
     }
 
     private static JPanel createLogEntryPanel(String log) {
@@ -70,8 +83,8 @@ public class LogPopup {
         logTextArea.setWrapStyleWord(true);
         logTextArea.setLineWrap(true);
         logTextArea.setEditable(false);
-        logTextArea.setBackground(new JBColor(new Color(36, 36, 36), new Color(40, 40, 40)));
-        logTextArea.setForeground(JBColor.white);
+        logTextArea.setBackground(new JBColor(new Color(219, 14, 14), new Color(85, 11, 11)));
+        logTextArea.setForeground(JBColor.blue);
 
         JButton copyButton = LogUtils.createCopyButton(log);
         JButton closeButton = LogUtils.createCloseButton();
