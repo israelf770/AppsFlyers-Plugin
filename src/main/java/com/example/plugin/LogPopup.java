@@ -34,9 +34,20 @@ public class LogPopup {
         }
         if(null == popup) {
             createPopup();
+        }
+        if(popup != null){
+        new Thread(() -> {
+            try {
+                Thread.sleep(1500); // השהייה של שנייה
+                SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
         } else {
             updateLogPanel();
         }
+
     }
 
     private static void createPopup(){
@@ -61,10 +72,9 @@ public class LogPopup {
                 .createPopup());
 
         SwingUtilities.invokeLater(popup::showInFocusCenter);
-        updateLogPanel();
     }
 
-    private static void updateLogPanel() {
+    public static void updateLogPanel() {
         if (popup == null) return; // 🔥 מוודא שהפופ-אפ קיים
 
         logPanel.removeAll(); // 🔥 מנקה את כל הלוגים הקודמים

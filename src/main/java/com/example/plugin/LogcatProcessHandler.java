@@ -19,6 +19,7 @@ public class LogcatProcessHandler {
             Process process = builder.start();
             OSProcessHandler processHandler = getOsProcessHandler(process);
             processHandler.startNotify();
+
         } catch (Exception e) {
             logger.error("Error starting adb logcat", e);
         }
@@ -30,7 +31,7 @@ public class LogcatProcessHandler {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
-                if (text.contains("CONVERSION-")) {
+                if (text.contains("CONVERSION-")&&text.length()>14) {
                     String formattedLog = LogUtils.extractKeyValueFromLog(text);
                     String date = text.substring(0, 14);
                     if (formattedLog != null) {
@@ -41,7 +42,7 @@ public class LogcatProcessHandler {
                         LogPopup.showPopup(date +"/ CONVERSION: "+text.substring(resIndex));
                     }
                 }
-                if (text.contains("LAUNCH-")) {
+                if (text.contains("LAUNCH-")&&text.length()>14) {
                     String formattedLog = LogUtils.extractKeyValueFromLog(text);
                     String date = text.substring(0, 14);
                     if (text.contains("new task added: LAUNCH")){

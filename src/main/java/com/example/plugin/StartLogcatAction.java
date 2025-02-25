@@ -7,9 +7,12 @@ import org.jetbrains.annotations.NotNull;
 public class StartLogcatAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-
+        if(LogPopup.getPopup()==null){
             LogcatProcessHandler.startLogcat();
-
+        } else {
+            LogUtils.closePopup();
+            LogcatProcessHandler.startLogcat();
+        }
 
     }
 }
