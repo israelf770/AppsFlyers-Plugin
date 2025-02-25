@@ -1,8 +1,7 @@
 <idea-plugin>
     <id>com.example.plugin</id>
     <name>Logcat</name>
-    <vendor email="israelmanor11@.com" url="https://www.appsflyer.com">appsflyer</vendor>
-
+    <vendor email="israelmanor11@domain.com" url="https://www.appsflyer.com">appsflyer</vendor>
     <description><![CDATA[
     This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
     <em>Supports various log filtering options.</em>
@@ -28,4 +27,5 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
+
 </idea-plugin>

@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 public class StartLogcatAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        // קריאה למתודה startLogcat() כדי להתחיל את ההאזנה ל-Logcat
-        LogcatProcessHandler.startLogcat();
+
+            LogcatProcessHandler.startLogcat();
+
+
     }
 }

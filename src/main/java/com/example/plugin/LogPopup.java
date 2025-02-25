@@ -14,21 +14,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LogPopup {
-    private static final List<String> displayedLogs = new ArrayList<>();
+    private static  List<String> displayedLogs = new ArrayList<>();
     private static JBPopup popup;
     private static JPanel logPanel = new JPanel(); // 🔥 הגדרת לוח הלוגים כשדה גלובלי
 
-    public static void setPopup(JBPopup newPopup) {
-        popup = newPopup;
-    }
-    public static JBPopup getPopup() {
-        return popup;
-    }
+    public static void setPopup(JBPopup newPopup) {popup = newPopup;}
+    public static JBPopup getPopup() {return popup;}
+    public static void setLogPanel(JPanel newLogPanel) {logPanel= newLogPanel;}
+    public static JPanel getLogPanel(){return logPanel;}
+    public static void setDisplayedLogs(List<String> newDisplayedLogs) {displayedLogs = newDisplayedLogs;}
+    public static List<String> getDisplayedLogs(){return displayedLogs;}
 
     public static void showPopup(String formattedLogText) {
         if (formattedLogText.equals("new task added: LAUNCH")){
             displayedLogs.clear();
-            displayedLogs.add("clear");
+            return;
         }else if (!displayedLogs.contains(formattedLogText)) {
             displayedLogs.add(formattedLogText);
         }
@@ -53,6 +53,11 @@ public class LogPopup {
                 .setResizable(true)
                 .setRequestFocus(true)
                 .setCancelOnClickOutside(true)
+                .setCancelCallback(
+                        ()->{
+                        popup=null;
+                        return true;
+                        })
                 .createPopup());
 
         SwingUtilities.invokeLater(popup::showInFocusCenter);

@@ -2,6 +2,7 @@ package com.example.plugin;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.openapi.diagnostic.Logger;
 
 import javax.swing.*;
@@ -17,16 +18,32 @@ public class LogUtils {
             int jsonStartIndex = logText.indexOf("{");
             int jsonEndIndex = logText.lastIndexOf("}");
 
-            if (jsonStartIndex != -1 && jsonEndIndex != -1) {
-                String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1);
-                JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
-                String uid = jsonObject.has("uid") ? jsonObject.get("uid").getAsString() : "UID Not Found";
-                return "UID: " + uid;
-            } else {
+            // בדיקה שהאינדקסים תקפים
+            if (jsonStartIndex == -1 || jsonEndIndex == -1 || jsonEndIndex < jsonStartIndex) {
+                System.err.println("Error: JSON not found in log text.");
                 return null;
             }
+
+            // בדיקה שהאינדקסים לא חורגים מאורך המחרוזת
+            if (jsonEndIndex + 1 > logText.length()) {
+                System.err.println("Error: Invalid substring range.");
+                return null;
+            }
+
+            String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+
+            System.out.println("Extracted JSON: " + jsonPart); // הדפסת JSON לבדיקה
+
+            // פרסינג ל-JSON
+            JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
+            String uid = jsonObject.has("uid") ? jsonObject.get("uid").getAsString() : "UID Not Found";
+
+            return "UID: " + uid;
+        } catch (JsonSyntaxException e) {
+            System.err.println("JSON parsing error: " + e.getMessage());
+            return null;
         } catch (Exception e) {
-            logger.error("Error extracting key-value from log", e);
+            System.err.println("Unexpected error: " + e.getMessage());
             return null;
         }
     }
@@ -50,10 +67,18 @@ public class LogUtils {
     }
 
 
-    private static void closePopup() {
-        if (LogPopup.getPopup() != null) {
+    public static void closePopup() {
+        if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
             LogPopup.getPopup().cancel();
             LogPopup.setPopup(null);
+            clearLogs(); // ניקוי רשימת הלוגים
         }
+    }
+
+    public static void clearLogs() {
+        LogPopup.getDisplayedLogs().clear();
+        LogPopup.getLogPanel().removeAll();
+        LogPopup.getLogPanel().revalidate();
+        LogPopup.getLogPanel().repaint();
     }
 }
