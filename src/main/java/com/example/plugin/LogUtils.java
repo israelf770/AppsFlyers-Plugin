@@ -3,15 +3,18 @@ package com.example.plugin;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.ui.JBColor;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 
 public class LogUtils {
-    private static final Logger logger = Logger.getInstance(LogUtils.class);
+
+//    private static final JBColor CLOSE_BUTTON_COLOR = new JBColor(new Color(255, 0, 0), new Color(255, 0, 0));
+    private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
+    private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
     public static String extractKeyValueFromLog(String logText) {
         try {
@@ -50,11 +53,21 @@ public class LogUtils {
 
     public static JButton createCopyButton(String log) {
         JButton copyButton = new JButton("Copy");
-        copyButton.addActionListener(e -> copyToClipboard(log));
+        copyButton.setBackground(COPY_BUTTON_COLOR);
+        copyButton.setFont(BUTTON_FONT);
+        copyButton.setFocusPainted(false);
+        copyButton.setPreferredSize(new Dimension(100, 30));
+        copyButton.addActionListener(e -> {
+            copyToClipboard(log);
+            // Change button color temporarily to indicate success
+            Color originalColor = copyButton.getBackground();
+            copyButton.setBackground(JBColor.green);
+            new Timer(500, evt -> copyButton.setBackground(originalColor)).start();
+        });
         return copyButton;
     }
 
-    public static void copyToClipboard(String log) {
+    private static void copyToClipboard(String log) {
         StringSelection selection = new StringSelection(log);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
@@ -62,6 +75,13 @@ public class LogUtils {
 
     public static JButton createCloseButton() {
         JButton closeButton = new JButton("✖");
+        closeButton.setFont(new Font("Arial", Font.BOLD, 16));
+        closeButton.setFocusPainted(false);
+        closeButton.setBorder(BorderFactory.createEmptyBorder());
+        closeButton.setPreferredSize(new Dimension(30, 30));
+        closeButton.setMaximumSize(new Dimension(30, 30));
+        closeButton.setMinimumSize(new Dimension(30, 30));
+        closeButton.setAlignmentX(Component.LEFT_ALIGNMENT); // מבטיח שהכפתור יישאר שמאלי
         closeButton.addActionListener(e -> closePopup());
         return closeButton;
     }

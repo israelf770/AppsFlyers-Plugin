@@ -6,17 +6,30 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.JBTextArea;
+import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class LogPopup {
     private static  List<String> displayedLogs = new ArrayList<>();
     private static JBPopup popup;
     private static JPanel logPanel = new JPanel(); // 🔥 הגדרת לוח הלוגים כשדה גלובלי
+    private static JScrollPane scrollPane;
+
+    private static final JBColor BACKGROUND_COLOR = new JBColor(new Color(30, 30, 30), new Color(30, 30, 30));
+    private static final JBColor ENTRY_BACKGROUND_COLOR = new JBColor(new Color(246, 241, 241), new Color(50, 50, 50));
+    private static final JBColor TEXT_AREA_BACKGROUND_COLOR = new JBColor(new Color(255, 255, 255), new Color(40, 40, 40));
+    private static final Font TEXT_AREA_FONT = new Font("Arial", Font.PLAIN, 14);
+    private static String text = "";
+
 
     public static void setPopup(JBPopup newPopup) {popup = newPopup;}
     public static JBPopup getPopup() {return popup;}
@@ -38,7 +51,7 @@ public class LogPopup {
         if(popup != null){
         new Thread(() -> {
             try {
-                Thread.sleep(1500); // השהייה של שנייה
+                Thread.sleep(1000); // השהייה של שנייה
                 SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -50,28 +63,46 @@ public class LogPopup {
 
     }
 
-    private static void createPopup(){
+    private static void createPopup() {
+        // Main container with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(BACKGROUND_COLOR);
+
+        // Button panel at the top
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.setBackground(BACKGROUND_COLOR);
+        JButton closeButton = LogUtils.createCloseButton();
+        buttonPanel.add(closeButton);
+
+        // Log panel
+        logPanel = new JPanel();
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
-        logPanel.setBackground(new JBColor(new Color(30, 30, 30), new Color(30, 30, 30)));
+        logPanel.setBackground(BACKGROUND_COLOR);
 
-        JScrollPane scrollPane = new JScrollPane(logPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Add button panel to the top of the main panel
+        mainPanel.add(buttonPanel, BorderLayout.NORTH);
 
-        setPopup(JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(scrollPane, null)
+        // Add log panel to a scroll pane
+        scrollPane = new JBScrollPane(logPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+
+        // Add scroll pane to the center of the main panel
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        popup = JBPopupFactory.getInstance()
+                .createComponentPopupBuilder(mainPanel, null)
                 .setTitle("Extracted Log")
                 .setMovable(true)
                 .setResizable(true)
                 .setRequestFocus(true)
-                .setCancelOnClickOutside(true)
-                .setCancelCallback(
-                        ()->{
-                        popup=null;
-                        return true;
-                        })
-                .createPopup());
-
-        SwingUtilities.invokeLater(popup::showInFocusCenter);
+                .setCancelOnClickOutside(false)
+                .setCancelCallback(() -> {
+                    popup = null;
+                    return true;
+                })
+                .createPopup();
+        popup.showInFocusCenter();
     }
 
     public static void updateLogPanel() {
@@ -89,29 +120,26 @@ public class LogPopup {
         logPanel.repaint();
     }
 
-    private static JPanel createLogEntryPanel(String log) {
+    private static @NotNull JPanel createLogEntryPanel(String log) {
         JPanel entryPanel = new JPanel(new BorderLayout());
-        entryPanel.setBackground(new JBColor(new Color(50, 50, 50), new Color(50, 50, 50)));
+        entryPanel.setBackground(ENTRY_BACKGROUND_COLOR);
 
-        JTextArea logTextArea = new JTextArea(log);
-        logTextArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        JTextArea logTextArea = new JBTextArea(log);
+        logTextArea.setFont(TEXT_AREA_FONT);
         logTextArea.setWrapStyleWord(true);
         logTextArea.setLineWrap(true);
         logTextArea.setEditable(false);
-        logTextArea.setBackground(new JBColor(new Color(219, 14, 14), new Color(85, 11, 11)));
-        logTextArea.setForeground(JBColor.blue);
+        logTextArea.setBackground(TEXT_AREA_BACKGROUND_COLOR);
+        logTextArea.setForeground(JBColor.red);
 
         JButton copyButton = LogUtils.createCopyButton(log);
-        JButton closeButton = LogUtils.createCloseButton();
 
-        JPanel closeButtonPanel = new JPanel(new BorderLayout());
-        closeButtonPanel.setBackground(new JBColor(new Color(50, 50, 50), new Color(50, 50, 50)));
-        closeButtonPanel.add(closeButton, BorderLayout.EAST);
-
-        entryPanel.add(new JScrollPane(logTextArea), BorderLayout.CENTER);
+        // (Optional) You could add the close button to each entry if needed.
+        // For now, we add only a copy button.
+        entryPanel.add(new JBScrollPane(logTextArea), BorderLayout.CENTER);
         entryPanel.add(copyButton, BorderLayout.SOUTH);
-        entryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        entryPanel.setPreferredSize(new Dimension(500, 100));
+        entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        entryPanel.setPreferredSize(new Dimension(180, 90));
 
         return entryPanel;
     }

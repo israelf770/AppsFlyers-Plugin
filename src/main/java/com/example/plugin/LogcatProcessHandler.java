@@ -6,6 +6,7 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.openapi.util.Key;
+import javax.swing.SwingUtilities;
 
 import java.nio.charset.StandardCharsets;
 
@@ -14,6 +15,11 @@ public class LogcatProcessHandler {
 
     public static void startLogcat() {
         try {
+            LogPopup.getDisplayedLogs().clear();
+            if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
+                LogPopup.getPopup().cancel();
+                LogPopup.setPopup(null);
+            }
             logger.info("Logcat listener started");
             ProcessBuilder builder = new ProcessBuilder("adb", "logcat", "*:V");
             Process process = builder.start();
@@ -35,25 +41,25 @@ public class LogcatProcessHandler {
                     String formattedLog = LogUtils.extractKeyValueFromLog(text);
                     String date = text.substring(0, 14);
                     if (formattedLog != null) {
-                        LogPopup.showPopup(date+"/ CONVERSION: "+formattedLog);
+                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ CONVERSION: " + formattedLog));
                     }
                     if(text.contains("result:")){
                         int resIndex = text.indexOf("result");
-                        LogPopup.showPopup(date +"/ CONVERSION: "+text.substring(resIndex));
+                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ CONVERSION: " + text.substring(resIndex)));
                     }
                 }
                 if (text.contains("LAUNCH-")&&text.length()>14) {
                     String formattedLog = LogUtils.extractKeyValueFromLog(text);
                     String date = text.substring(0, 14);
                     if (text.contains("new task added: LAUNCH")){
-                        LogPopup.showPopup("new task added: LAUNCH");
+                        SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
                     }
                     if(text.contains("result:")){
                         int resIndex = text.indexOf("result");
-                        LogPopup.showPopup(date+"/ LAUNCH: "+text.substring(resIndex));
+                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ LAUNCH: " + text.substring(resIndex)));
                     }
                     if (formattedLog != null) {
-                        LogPopup.showPopup(date+"/ LAUNCH "+formattedLog);
+                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ LAUNCH " + formattedLog));
                     }
                 }
             }
