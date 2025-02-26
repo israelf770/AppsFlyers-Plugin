@@ -73,28 +73,6 @@ public class LogUtils {
         clipboard.setContents(selection, selection);
     }
 
-    public static JButton createCloseButton() {
-        JButton closeButton = new JButton("✖");
-        closeButton.setFont(new Font("Arial", Font.BOLD, 16));
-        closeButton.setFocusPainted(false);
-        closeButton.setBorder(BorderFactory.createEmptyBorder());
-        closeButton.setPreferredSize(new Dimension(30, 30));
-        closeButton.setMaximumSize(new Dimension(30, 30));
-        closeButton.setMinimumSize(new Dimension(30, 30));
-        closeButton.setAlignmentX(Component.LEFT_ALIGNMENT); // מבטיח שהכפתור יישאר שמאלי
-        closeButton.addActionListener(e -> closePopup());
-        return closeButton;
-    }
-
-
-    public static void closePopup() {
-        if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
-            LogPopup.getPopup().cancel();
-            LogPopup.setPopup(null);
-            clearLogs(); // ניקוי רשימת הלוגים
-        }
-    }
-
     public static void clearLogs() {
         LogPopup.getDisplayedLogs().clear();
         LogPopup.getLogPanel().removeAll();

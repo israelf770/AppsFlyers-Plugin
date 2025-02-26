@@ -3,8 +3,7 @@ package com.example.plugin;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
-import com.intellij.openapi.ui.popup.JBPopup;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.ui.popup.JBPopupFactory; // Note: no longer used, but you can remove if you like
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
@@ -13,16 +12,18 @@ import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class LogPopup {
-    private static  List<String> displayedLogs = new ArrayList<>();
-    private static JBPopup popup;
-    private static JPanel logPanel = new JPanel(); // 🔥 הגדרת לוח הלוגים כשדה גלובלי
-    private static JScrollPane scrollPane;
+    private static List<String> displayedLogs = new ArrayList<>();
+
+    // Replaced JBPopup with JDialog
+    private static JDialog popup;
+
+    private static JPanel logPanel = new JPanel();
 
     private static final JBColor BACKGROUND_COLOR = new JBColor(new Color(30, 30, 30), new Color(30, 30, 30));
     private static final JBColor ENTRY_BACKGROUND_COLOR = new JBColor(new Color(246, 241, 241), new Color(50, 50, 50));
@@ -30,40 +31,60 @@ public class LogPopup {
     private static final Font TEXT_AREA_FONT = new Font("Arial", Font.PLAIN, 14);
     private static String text = "";
 
+    // Getters/Setters
+    public static void setPopup(JDialog newPopup) {
+        popup = newPopup;
+    }
 
-    public static void setPopup(JBPopup newPopup) {popup = newPopup;}
-    public static JBPopup getPopup() {return popup;}
-    public static void setLogPanel(JPanel newLogPanel) {logPanel= newLogPanel;}
-    public static JPanel getLogPanel(){return logPanel;}
-    public static void setDisplayedLogs(List<String> newDisplayedLogs) {displayedLogs = newDisplayedLogs;}
-    public static List<String> getDisplayedLogs(){return displayedLogs;}
+    public static JDialog getPopup() {
+        return popup;
+    }
+
+    public static void setLogPanel(JPanel newLogPanel) {
+        logPanel = newLogPanel;
+    }
+
+    public static JPanel getLogPanel() {
+        return logPanel;
+    }
+
+    public static void setDisplayedLogs(List<String> newDisplayedLogs) {
+        displayedLogs = newDisplayedLogs;
+    }
+
+    public static List<String> getDisplayedLogs() {
+        return displayedLogs;
+    }
 
     public static void showPopup(String formattedLogText) {
-        if (formattedLogText.equals("new task added: LAUNCH")){
+        if (formattedLogText.equals("new task added: LAUNCH")) {
             displayedLogs.clear();
             return;
-        }else if (!displayedLogs.contains(formattedLogText)) {
+        } else if (!displayedLogs.contains(formattedLogText)) {
             displayedLogs.add(formattedLogText);
         }
-        if(null == popup) {
+
+        // If we haven't created a JDialog yet, do it now
+        if (popup == null) {
             createPopup();
         }
-        if(popup != null){
-        new Thread(() -> {
-            try {
-                Thread.sleep(1000); // השהייה של שנייה
-                SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+
+        if (popup != null) {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(200); // השהייה של שנייה
+                    SwingUtilities.invokeLater(LogPopup::updateLogPanel); // עדכון ב-UI Thread
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         } else {
             updateLogPanel();
         }
-
     }
 
     private static void createPopup() {
+
         // Main container with BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(BACKGROUND_COLOR);
@@ -71,8 +92,6 @@ public class LogPopup {
         // Button panel at the top
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.setBackground(BACKGROUND_COLOR);
-        JButton closeButton = LogUtils.createCloseButton();
-        buttonPanel.add(closeButton);
 
         // Log panel
         logPanel = new JPanel();
@@ -83,32 +102,44 @@ public class LogPopup {
         mainPanel.add(buttonPanel, BorderLayout.NORTH);
 
         // Add log panel to a scroll pane
-        scrollPane = new JBScrollPane(logPanel);
+        JScrollPane scrollPane = new JBScrollPane(logPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
         scrollPane.setPreferredSize(new Dimension(400, 300));
 
         // Add scroll pane to the center of the main panel
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        popup = JBPopupFactory.getInstance()
-                .createComponentPopupBuilder(mainPanel, null)
-                .setTitle("Extracted Log")
-                .setMovable(true)
-                .setResizable(true)
-                .setRequestFocus(true)
-                .setCancelOnClickOutside(false)
-                .setCancelCallback(() -> {
-                    popup = null;
-                    return true;
-                })
-                .createPopup();
-        popup.showInFocusCenter();
+        // === Create JDialog in place of JBPopup ===
+        popup = new JDialog();
+        popup.setTitle("Extracted Log");
+        popup.setModal(false);        // Non-blocking
+        popup.setResizable(true);     // Make it resizable
+        popup.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        popup.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                // ברגע שהחלון נסגר (אחרי ה-DISPOSE), אפס את המשתנה
+                popup = null;
+            }
+        });
+
+
+        // Add our mainPanel to the JDialog's content pane
+        popup.getContentPane().add(mainPanel);
+
+        // Pack and center
+        popup.pack();
+        popup.setLocationRelativeTo(null);
+
+        // Make sure to show it
+        popup.setVisible(true);
     }
 
     public static void updateLogPanel() {
-        if (popup == null) return; // 🔥 מוודא שהפופ-אפ קיים
+        if (popup == null) return;
 
-        logPanel.removeAll(); // 🔥 מנקה את כל הלוגים הקודמים
+        logPanel.removeAll();
 
         for (String log : displayedLogs) {
             JPanel entryPanel = createLogEntryPanel(log);
@@ -134,8 +165,7 @@ public class LogPopup {
 
         JButton copyButton = LogUtils.createCopyButton(log);
 
-        // (Optional) You could add the close button to each entry if needed.
-        // For now, we add only a copy button.
+        // Add text area & copy button
         entryPanel.add(new JBScrollPane(logTextArea), BorderLayout.CENTER);
         entryPanel.add(copyButton, BorderLayout.SOUTH);
         entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
