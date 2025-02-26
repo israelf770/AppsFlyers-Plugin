@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public class StartLogcatAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        LogcatProcessHandler.startLogcat();
+            LogcatProcessHandler.startLogcat();
+
     }
 }
