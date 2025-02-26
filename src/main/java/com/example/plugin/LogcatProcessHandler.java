@@ -20,8 +20,17 @@ public class LogcatProcessHandler {
                 LogPopup.getPopup().cancel();
                 LogPopup.setPopup(null);
             }
+            String adbPath;
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                adbPath = System.getProperty("user.home") + "\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe";
+            } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                adbPath = "/Users/" + System.getProperty("user.name") + "/Library/Android/sdk/platform-tools/adb";
+            } else {
+                throw new RuntimeException("Unsupported OS");
+            }
+
             logger.info("Logcat listener started");
-            ProcessBuilder builder = new ProcessBuilder("adb", "logcat", "*:V");
+            ProcessBuilder builder = new ProcessBuilder(adbPath, "logcat", "*:V");
             Process process = builder.start();
             OSProcessHandler processHandler = getOsProcessHandler(process);
             processHandler.startNotify();
@@ -66,4 +75,5 @@ public class LogcatProcessHandler {
         });
         return processHandler;
     }
+
 }
