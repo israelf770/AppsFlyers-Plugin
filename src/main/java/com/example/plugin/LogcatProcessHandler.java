@@ -40,40 +40,45 @@ public class LogcatProcessHandler {
         }
     }
 
+    private static final int DATE_LENGTH = 14;
+
     private static @NotNull OSProcessHandler getOsProcessHandler(Process process) {
         OSProcessHandler processHandler = new OSProcessHandler(process, "adb logcat", StandardCharsets.UTF_8);
+
         processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
-                if (text.contains("CONVERSION-")&&text.length()>14) {
-                    String formattedLog = LogUtils.extractKeyValueFromLog(text);
-                    String date = text.substring(0, 14);
-                    if (formattedLog != null) {
-                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ CONVERSION: " + formattedLog));
-                    }
-                    if(text.contains("result:")){
-                        int resIndex = text.indexOf("result");
-                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ CONVERSION: " + text.substring(resIndex)));
-                    }
-                }
-                if (text.contains("LAUNCH-")&&text.length()>14) {
-                    String formattedLog = LogUtils.extractKeyValueFromLog(text);
-                    String date = text.substring(0, 14);
-                    if (text.contains("new task added: LAUNCH")){
-                        SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
-                    }
-                    if(text.contains("result:")){
-                        int resIndex = text.indexOf("result");
-                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ LAUNCH: " + text.substring(resIndex)));
-                    }
-                    if (formattedLog != null) {
-                        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + "/ LAUNCH " + formattedLog));
-                    }
+                if (text.length() <= DATE_LENGTH) return; // התעלמות משורות קצרות מדי
+
+                String date = text.substring(0, DATE_LENGTH);
+                if (text.contains("CONVERSION-")) {
+                    processLog("CONVERSION", text, date);
+                } else if (text.contains("LAUNCH-")) {
+                    processLog("LAUNCH", text, date);
                 }
             }
         });
+
         return processHandler;
+    }
+
+    private static void processLog(String type, String text, String date) {
+        String formattedLog = LogUtils.extractKeyValueFromLog(text);
+
+        if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
+            return;
+        }
+
+        if (text.contains("result:")) {
+            int resIndex = text.indexOf("result");
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
+        }
+
+        if (formattedLog != null && !formattedLog.isEmpty()) {
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
+        }
     }
 
 }
