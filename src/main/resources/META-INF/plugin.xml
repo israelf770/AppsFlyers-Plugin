@@ -15,9 +15,6 @@
         <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
     </extensions>
 
-    <applicationListeners>
-        <listener class="com.example.plugin.LogcatStartup" topic="com.intellij.openapi.startup.StartupActivity"/>
-    </applicationListeners>
 
     <actions>
         <action id="com.example.plugin.StartLogcatAction"
