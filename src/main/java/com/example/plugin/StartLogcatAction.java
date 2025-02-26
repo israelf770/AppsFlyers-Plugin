@@ -10,7 +10,7 @@ public class StartLogcatAction extends AnAction {
         if(LogPopup.getPopup()==null){
             LogcatProcessHandler.startLogcat();
         } else {
-            LogUtils.closePopup();
+            LogUtils.clearLogs();
             LogcatProcessHandler.startLogcat();
         }
 

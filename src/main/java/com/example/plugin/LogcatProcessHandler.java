@@ -17,7 +17,7 @@ public class LogcatProcessHandler {
         try {
             LogPopup.getDisplayedLogs().clear();
             if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
-                LogPopup.getPopup().cancel();
+                LogPopup.getPopup().dispose();
                 LogPopup.setPopup(null);
             }
             String adbPath;
