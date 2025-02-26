@@ -58,7 +58,12 @@ public class LogUtils {
         copyButton.setFocusPainted(false);
         copyButton.setPreferredSize(new Dimension(100, 30));
         copyButton.addActionListener(e -> {
-            copyToClipboard(log);
+            String toCopy = log;
+            int uidIndex = log.indexOf("UID:");
+            if (uidIndex != -1) {
+                toCopy = log.substring(uidIndex + "UID:".length()).trim();
+            }
+            copyToClipboard(toCopy);
             // Change button color temporarily to indicate success
             Color originalColor = copyButton.getBackground();
             copyButton.setBackground(JBColor.green);

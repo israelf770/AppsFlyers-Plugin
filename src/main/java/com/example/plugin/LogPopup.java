@@ -51,14 +51,12 @@ public class LogPopup {
         if(popup != null){
         new Thread(() -> {
             try {
-                Thread.sleep(1000); // השהייה של שנייה
+                Thread.sleep(400); // השהייה של שנייה
                 SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }).start();
-        } else {
-            updateLogPanel();
         }
 
     }
@@ -132,12 +130,14 @@ public class LogPopup {
         logTextArea.setBackground(TEXT_AREA_BACKGROUND_COLOR);
         logTextArea.setForeground(JBColor.red);
 
-        JButton copyButton = LogUtils.createCopyButton(log);
+        if (log.contains("UID")) {
+            JButton copyButton = LogUtils.createCopyButton(log);
+            entryPanel.add(copyButton, BorderLayout.SOUTH);
+        }
 
         // (Optional) You could add the close button to each entry if needed.
         // For now, we add only a copy button.
         entryPanel.add(new JBScrollPane(logTextArea), BorderLayout.CENTER);
-        entryPanel.add(copyButton, BorderLayout.SOUTH);
         entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         entryPanel.setPreferredSize(new Dimension(180, 90));
 

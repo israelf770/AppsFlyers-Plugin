@@ -64,19 +64,17 @@ public class LogcatProcessHandler {
     }
 
     private static void processLog(String type, String text, String date) {
-        String formattedLog = LogUtils.extractKeyValueFromLog(text);
 
         if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
             SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
             return;
         }
 
+        String formattedLog = LogUtils.extractKeyValueFromLog(text);
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
-        }
-
-        if (formattedLog != null && !formattedLog.isEmpty()) {
+        }else if (formattedLog != null && !formattedLog.isEmpty()) {
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
         }
     }
