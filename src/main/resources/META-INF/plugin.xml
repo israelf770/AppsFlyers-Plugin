@@ -21,7 +21,7 @@
                 class="com.example.plugin.StartLogcatAction"
                 text="Start Logcat Listener"
                 description="Starts listening to Logcat output">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="MainToolbarLeft" anchor="first"/>
         </action>
     </actions>
 
