@@ -20,8 +20,9 @@
         <action id="com.example.plugin.StartLogcatAction"
                 class="com.example.plugin.StartLogcatAction"
                 text="Start Logcat Listener"
-                description="Starts listening to Logcat output">
-            <add-to-group group-id="MainToolbarLeft" anchor="first"/>
+                description="Starts listening to Logcat output"
+                icon="AllIcons.Actions.DynamicUsages">
+            <add-to-group group-id="MainToolbarCenter" anchor="last"/>
         </action>
     </actions>
 
