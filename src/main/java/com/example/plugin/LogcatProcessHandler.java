@@ -1,66 +1,56 @@
 package com.example.plugin;
 
-import org.jetbrains.annotations.NotNull;
-import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.openapi.util.Key;
+//import com.android.tools.idea.logcat.LogcatService;
+import com.intellij.openapi.project.Project;
 import javax.swing.SwingUtilities;
-
-import java.nio.charset.StandardCharsets;
+import java.lang.reflect.Method;
+import java.util.List;
 
 public class LogcatProcessHandler {
-    private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
 
-    public static void startLogcat() {
+    public static void startLogcat(Project project) {
+        LogPopup.getDisplayedLogs().clear();
+        if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
+            LogPopup.getPopup().dispose();
+            LogPopup.setPopup(null);
+        }
+
         try {
-            LogPopup.getDisplayedLogs().clear();
-            if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
-                LogPopup.getPopup().dispose();
-                LogPopup.setPopup(null);
-            }
-            String adbPath;
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                adbPath = System.getProperty("user.home") + "\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe";
-            } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
-                adbPath = "/Users/" + System.getProperty("user.name") + "/Library/Android/sdk/platform-tools/adb";
-            } else {
-                throw new RuntimeException("Unsupported OS");
-            }
+            ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+                Class<?> logcatServiceClass = Class.forName("com.android.tools.idea.logcat.LogcatService", true, systemClassLoader);
+            Method getInstanceMethod = logcatServiceClass.getMethod("getInstance");
+            Object logcatService = getInstanceMethod.invoke(null);
 
-            logger.info("Logcat listener started");
-            ProcessBuilder builder = new ProcessBuilder(adbPath, "logcat", "*:V");
-            Process process = builder.start();
-            OSProcessHandler processHandler = getOsProcessHandler(process);
-            processHandler.startNotify();
+            Class<?> logcatListenerClass = Class.forName("com.android.tools.idea.logcat.LogcatListener", true, systemClassLoader);
+            Method addListenerMethod = logcatServiceClass.getMethod("addListener", Project.class, logcatListenerClass);
+            addListenerMethod.invoke(logcatService, project, new LogcatListener());
 
         } catch (Exception e) {
-            logger.error("Error starting adb logcat", e);
+            e.printStackTrace();
         }
     }
 
-    private static final int DATE_LENGTH = 14;
+    private static class LogcatListener {
+        public void onLogcatMessagesReceived(List<?> messages) {
+            try {
 
-    private static @NotNull OSProcessHandler getOsProcessHandler(Process process) {
-        OSProcessHandler processHandler = new OSProcessHandler(process, "adb logcat", StandardCharsets.UTF_8);
+                for (Object message : messages) {
+                    Method getMessageMethod = message.getClass().getMethod("getMessage");
+                    String logText = (String) getMessageMethod.invoke(message);
+                    System.out.println(message);
+                    if (logText.length() <= 14) continue; // Ignore short lines
+                    String date = logText.substring(0, 14);
 
-        processHandler.addProcessListener(new ProcessAdapter() {
-            @Override
-            public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-                String text = event.getText();
-                if (text.length() <= DATE_LENGTH) return; // התעלמות משורות קצרות מדי
-
-                String date = text.substring(0, DATE_LENGTH);
-                if (text.contains("CONVERSION-")) {
-                    processLog("CONVERSION", text, date);
-                } else if (text.contains("LAUNCH-")) {
-                    processLog("LAUNCH", text, date);
+                    if (logText.contains("CONVERSION-")) {
+                        processLog("CONVERSION", logText, date);
+                    } else if (logText.contains("LAUNCH-")) {
+                        processLog("LAUNCH", logText, date);
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
-
-        return processHandler;
+        }
     }
 
     private static void processLog(String type, String text, String date) {

@@ -10,10 +10,12 @@
     <!-- Keep only IntelliJ Platform dependency -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.platform</depends>
+<!--   <depends>com.intellij.modules.android</depends>-->
     <!-- Notification group definition -->
-    <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
-    </extensions>
+<!--    <extensions defaultExtensionNs="com.intellij">-->
+<!--        <notificationGroup id="Logcat Listener" displayType="BALLOON"/>-->
+<!--    </extensions>-->
 
 
     <actions>

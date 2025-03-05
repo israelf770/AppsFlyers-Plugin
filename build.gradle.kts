@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
-    id("org.jetbrains.intellij") version "1.17.4"
+    id("org.jetbrains.intellij") version "1.7.0"
 }
 
 group = "com.example"
@@ -10,26 +10,33 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenCentral()
     google()
+    maven { url = uri("https://www.jetbrains.com/intellij-repository/releases") }
+    maven { url = uri("https://maven.google.com") }
 }
 
 dependencies {
+//    implementation("com.android.tools:common:30.4.0")
     implementation("com.google.code.gson:gson:2.8.9")
+    compileOnly(files("${System.getenv("ANDROID_SDK_ROOT")}/platform-tools/adb"))
+    implementation("com.android.tools.ddms:ddmlib:26.5.0")
+    implementation("com.android.tools.idea:android:2024.2.2.13")
 }
 
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version = "2024.2.2"  // Use the appropriate version
-    plugins.set(listOf(/* Plugin Dependencies */))
+    version = "2024.2.2"
+    plugins.set(listOf("android"))
+    updateSinceUntilBuild = false
+    sameSinceUntilBuild = false
 }
 
 tasks.runIde {
-    ideDir.set(file("/Applications/Android Studio.app/Contents")) // Replace with actual path
+    ideDir.set(file("/Applications/Android Studio.app/Contents"))
 }
 
 
 tasks {
-    // Set the JVM compatibility versions
     withType<JavaCompile> {
         sourceCompatibility = "17"
         targetCompatibility = "17"
