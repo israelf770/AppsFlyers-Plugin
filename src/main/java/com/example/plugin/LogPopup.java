@@ -69,19 +69,18 @@ public class LogPopup {
             createPopup();
         }
         if(popup != null){
-        new Thread(() -> {
-            try {
-                Thread.sleep(400); // השהייה של שנייה
-                SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(400); // Delay of 400ms
+                    SwingUtilities.invokeLater(() -> updateLogPanel()); // Call updateLogPanel on UI Thread
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 
     private static void createPopup() {
-
         // Main container with BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(BACKGROUND_COLOR);
@@ -89,6 +88,39 @@ public class LogPopup {
         // Button panel at the top
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.setBackground(BACKGROUND_COLOR);
+
+        // Add filter buttons
+        JToggleButton showAllButton = new JToggleButton("All");
+        JToggleButton showConversionButton = new JToggleButton("CONVERSION");
+        JToggleButton showLaunchButton = new JToggleButton("LAUNCH");
+        JToggleButton showEventButton = new JToggleButton("EVENT");
+
+        // Set selected by default
+        showAllButton.setSelected(true);
+
+        // Button group to make them mutually exclusive
+        ButtonGroup filterGroup = new ButtonGroup();
+        filterGroup.add(showAllButton);
+        filterGroup.add(showConversionButton);
+        filterGroup.add(showLaunchButton);
+        filterGroup.add(showEventButton);
+
+        // Add filter action listeners
+        showAllButton.addActionListener(e -> filterLogs(null));
+        showConversionButton.addActionListener(e -> filterLogs("CONVERSION"));
+        showLaunchButton.addActionListener(e -> filterLogs("LAUNCH"));
+        showEventButton.addActionListener(e -> filterLogs("EVENT"));
+
+        // Add clear button
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> LogUtils.clearLogs());
+
+        // Add buttons to panel
+        buttonPanel.add(showAllButton);
+        buttonPanel.add(showConversionButton);
+        buttonPanel.add(showLaunchButton);
+        buttonPanel.add(showEventButton);
+        buttonPanel.add(clearButton);
 
         // Log panel
         logPanel = new JPanel();
@@ -101,14 +133,14 @@ public class LogPopup {
         // Add log panel to a scroll pane
         JScrollPane scrollPane = new JBScrollPane(logPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
-        scrollPane.setPreferredSize(new Dimension(400, 300));
+        scrollPane.setPreferredSize(new Dimension(600, 400)); // Larger size for better visibility
 
         // Add scroll pane to the center of the main panel
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         // === Create JDialog in place of JBPopup ===
         popup = new JDialog();
-        popup.setTitle("Extracted Log");
+        popup.setTitle("Logcat Monitor");
         popup.setModal(false);        // Non-blocking
         popup.setResizable(true);     // Make it resizable
         popup.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -116,11 +148,10 @@ public class LogPopup {
         popup.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                // ברגע שהחלון נסגר (אחרי ה-DISPOSE), אפס את המשתנה
+                // When window is closed (after DISPOSE), reset the variable
                 popup = null;
             }
         });
-
 
         // Add our mainPanel to the JDialog's content pane
         popup.getContentPane().add(mainPanel);
@@ -141,7 +172,26 @@ public class LogPopup {
         for (String log : displayedLogs) {
             JPanel entryPanel = createLogEntryPanel(log);
             logPanel.add(entryPanel);
-            logPanel.add(Box.createVerticalStrut(10)); // מרווחים בין לוגים
+            logPanel.add(Box.createVerticalStrut(10)); // Space between logs
+        }
+
+        logPanel.revalidate();
+        logPanel.repaint();
+    }
+
+    // New method to filter logs by type
+    private static void filterLogs(String filterType) {
+        if (popup == null) return;
+
+        logPanel.removeAll();
+
+        for (String log : displayedLogs) {
+            // If no filter or log contains the filter type, add it
+            if (filterType == null || log.contains("/ " + filterType)) {
+                JPanel entryPanel = createLogEntryPanel(log);
+                logPanel.add(entryPanel);
+                logPanel.add(Box.createVerticalStrut(10));
+            }
         }
 
         logPanel.revalidate();
@@ -158,17 +208,32 @@ public class LogPopup {
         logTextArea.setLineWrap(true);
         logTextArea.setEditable(false);
         logTextArea.setBackground(TEXT_AREA_BACKGROUND_COLOR);
-        logTextArea.setForeground(JBColor.red);
 
-        if (log.contains("UID")) {
+        // Color-code by log type
+        if (log.contains("/ EVENT:")) {
+            logTextArea.setForeground(JBColor.GREEN);
+        } else if (log.contains("/ CONVERSION")) {
+            logTextArea.setForeground(JBColor.RED);
+        } else if (log.contains("/ LAUNCH")) {
+            logTextArea.setForeground(JBColor.BLUE);
+        } else {
+            logTextArea.setForeground(JBColor.GRAY);
+        }
+
+        // Add copy button for logs with copyable content
+        if (log.contains("UID") || log.contains("Event:") || log.contains("app_id=")) {
             JButton copyButton = LogUtils.createCopyButton(log);
             entryPanel.add(copyButton, BorderLayout.SOUTH);
         }
 
+        // Add text area to a scroll pane for long content
+        JScrollPane textScrollPane = new JBScrollPane(logTextArea);
+        textScrollPane.setBorder(BorderFactory.createEmptyBorder());
+
         // Add text area & copy button
-        entryPanel.add(new JBScrollPane(logTextArea), BorderLayout.CENTER);
+        entryPanel.add(textScrollPane, BorderLayout.CENTER);
         entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        entryPanel.setPreferredSize(new Dimension(180, 90));
+        entryPanel.setPreferredSize(new Dimension(550, 100)); // Taller for better visibility
 
         return entryPanel;
     }
