@@ -1,29 +1,20 @@
 <idea-plugin>
     <id>com.example.plugin</id>
     <name>Logcat</name>
-    <vendor email="israelmanor11@.com" url="https://www.appsflyer.com">appsflyer</vendor>
-
+    <vendor email="israelmanor11@domain.com" url="https://www.appsflyer.com">appsflyer</vendor>
     <description><![CDATA[
-      This plugin helps developers efficiently search and filter logs within the IDE.
-      It integrates with your application and provides easy access to log data.
-      <em>Supports various log filtering options.</em>
+    This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
+    <em>Supports various log filtering options.</em>
     ]]></description>
 
-    <!-- גרסת הפלטפורמה (מרומזת גם ב-patchPluginXml) -->
-    <idea-version since-build="241" until-build="243.*"/>
-
-    <!-- תלות במודולים הבסיסיים של IntelliJ.
-         אפשר להוסיף עוד אם עדיין חסר extension points. -->
+    <!-- Keep only IntelliJ Platform dependency -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
-    <!-- <depends>com.intellij.modules.androidstudio</depends>  // רק אם דרוש במיוחד לאנדרואיד סטודיו -->
-
+    <!-- Notification group definition -->
     <extensions defaultExtensionNs="com.intellij">
-        <!-- מאפשר התראות בצורת BALLOON -->
         <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
+    </extensions>
 
-        <!-- מאזין לאירועי הרצה (אם זמין בגרסה הנוכחית) -->
-=    </extensions>
 
     <actions>
         <action id="com.example.plugin.StartLogcatAction"
@@ -33,4 +24,5 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
+
 </idea-plugin>
