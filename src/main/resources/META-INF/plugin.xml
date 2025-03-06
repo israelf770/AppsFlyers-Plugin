@@ -23,8 +23,7 @@
                 class="com.example.plugin.StartLogcatAction"
                 text="Start Logcat Listener"
                 description="Starts listening to Logcat output"
-                icon="/icons/Mediamodifier-Design2.svg">
-<!--                icon="AllIcons.Actions.DynamicUsages">-->
+                icon="/icons/appsflyer.svg">
             <add-to-group group-id="MainToolbarCenter" anchor="last"/>
         </action>
     </actions>
