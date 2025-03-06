@@ -12,6 +12,8 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.plugin.LogUtils.createTextPanel;
+
 public class LogPopup {
     // Static variables with proper access modifiers
     private static List<String> displayedLogs = new ArrayList<>();
@@ -62,12 +64,13 @@ public class LogPopup {
         // If we haven't created a JDialog yet, do it now
         if (popup == null) {
             createPopup();
+
         }
 
         if (popup != null) {
             new Thread(() -> {
                 try {
-                    Thread.sleep(400);
+                    Thread.sleep(1000);
                     SwingUtilities.invokeLater(() -> updateLogPanel());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -124,6 +127,7 @@ public class LogPopup {
 
         // Make sure to show it
         popup.setVisible(true);
+        createTextPanel("Loaded");
     }
 
     public static void updateLogPanel() {
@@ -141,7 +145,7 @@ public class LogPopup {
         logPanel.repaint();
     }
 
-    private static JPanel createLogEntryPanel(String log) {
+    public static JPanel createLogEntryPanel(String log) {
         JPanel entryPanel = new JPanel(new BorderLayout());
         entryPanel.setBackground(ENTRY_BACKGROUND_COLOR);
 
@@ -158,9 +162,11 @@ public class LogPopup {
         buttonPanel.setBackground(entryPanel.getBackground());
 
         // Try to create a copy button
-        JButton copyButton = LogUtils.createCopyButton(log);
-        if (copyButton != null) {
-            buttonPanel.add(copyButton);
+        if(!log.equals("Loaded")){
+            JButton copyButton = LogUtils.createCopyButton(log);
+            if (copyButton != null) {
+                buttonPanel.add(copyButton);
+            }
         }
 
         // Add text area & button panel

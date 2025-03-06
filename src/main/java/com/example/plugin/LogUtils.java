@@ -126,6 +126,12 @@ public class LogUtils {
         clipboard.setContents(selection, selection);
     }
 
+    public static void createTextPanel(String msg){
+        JPanel entryPanel = LogPopup.createLogEntryPanel(msg);
+        LogPopup.getLogPanel().add(entryPanel);
+        LogPopup.getLogPanel().add(Box.createVerticalStrut(10));
+    }
+
     public static void clearLogs() {
         LogPopup.getDisplayedLogs().clear();
         LogPopup.getLogPanel().removeAll();

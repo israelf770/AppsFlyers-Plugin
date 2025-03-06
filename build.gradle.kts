@@ -19,7 +19,6 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     compileOnly(files("${System.getenv("ANDROID_SDK_ROOT")}/platform-tools/adb"))
     implementation("com.android.tools.ddms:ddmlib:26.5.0")
-    implementation("com.android.tools.idea:android:2024.2.2.13")
 }
 
 // Configure Gradle IntelliJ Plugin

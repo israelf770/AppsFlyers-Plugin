@@ -21,12 +21,16 @@ public class LogcatProcessHandler {
                 LogPopup.setPopup(null);
             }
             String adbPath;
-            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+            String osName = System.getProperty("os.name").toLowerCase();
+
+            if (osName.contains("win")) {
                 adbPath = System.getProperty("user.home") + "\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe";
-            } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+            } else if (osName.contains("mac")) {
                 adbPath = "/Users/" + System.getProperty("user.name") + "/Library/Android/sdk/platform-tools/adb";
+            } else if (osName.contains("nux") || osName.contains("nix")) {
+                adbPath = System.getProperty("user.home") + "/Android/Sdk/platform-tools/adb";
             } else {
-                throw new RuntimeException("Unsupported OS");
+                throw new RuntimeException("Unsupported OS: " + osName);
             }
 
             logger.info("Logcat listener started");
