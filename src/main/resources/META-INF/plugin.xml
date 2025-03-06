@@ -10,6 +10,8 @@
     <!-- Keep only IntelliJ Platform dependency -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
+<!--    <depends>com.intellij.modules.androidstudio</depends>-->
+
     <!-- Notification group definition -->
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
@@ -20,8 +22,9 @@
         <action id="com.example.plugin.StartLogcatAction"
                 class="com.example.plugin.StartLogcatAction"
                 text="Start Logcat Listener"
-                description="Starts listening to Logcat output">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
+                description="Starts listening to Logcat output"
+                icon="/icons/appsflyer.svg">
+            <add-to-group group-id="MainToolbarCenter" anchor="last"/>
         </action>
     </actions>
 

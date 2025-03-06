@@ -1,5 +1,5 @@
 package com.example.plugin;
-import com.example.plugin.LogUtils;
+
 import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.execution.process.ProcessAdapter;
@@ -48,17 +48,15 @@ public class LogcatProcessHandler {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
-                if (text.length() <= DATE_LENGTH) return;
+                if (text.length() <= DATE_LENGTH) return; // התעלמות משורות קצרות מדי
 
                 String date = text.substring(0, DATE_LENGTH);
-
-                // Check for different log types
                 if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
-                } else if (text.contains("INAPP-")) {
-                    processLog("IN-APP EVENT", text, date);
+                }else if (text.contains("INAPP-")) {
+                    processLog("INAPP", text, date);
                 }
             }
         });
@@ -67,28 +65,28 @@ public class LogcatProcessHandler {
     }
 
     private static void processLog(String type, String text, String date) {
-        // Handle different log types
+
         if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
             SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
             return;
         }
 
-        // For in-app events, use the event extraction method
-        if ("IN-APP EVENT".equals(type)) {
-            String formattedEvent = LogUtils.extractEventFromLog(text);
-            if (formattedEvent != null) {
-                SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ":\n" + formattedEvent));
-                return;
-            }
-        }
+        String formattedLog = LogUtils.extractMessageFromJson(type,text);
 
-        // For other log types, try to extract key value
-        String formattedLog = LogUtils.extractEventFromLog (text);
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
-        } else if (formattedLog != null && !formattedLog.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
+        }else if (formattedLog != null) {
+            String finalFormattedLog = formattedLog;
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+        }
+    }
+
+    // New method to process event logs
+    private static void processEventLog(String type, String text, String date) {
+        String eventInfo = LogUtils.extractEventFromLog(text);
+        if (eventInfo != null && !eventInfo.isEmpty()) {
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
         }
     }
 }
