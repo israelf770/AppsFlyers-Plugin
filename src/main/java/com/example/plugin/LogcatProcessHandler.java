@@ -7,7 +7,6 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.openapi.util.Key;
 import javax.swing.SwingUtilities;
-
 import java.nio.charset.StandardCharsets;
 
 public class LogcatProcessHandler {
