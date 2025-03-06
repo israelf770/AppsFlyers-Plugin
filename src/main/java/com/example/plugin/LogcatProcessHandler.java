@@ -83,4 +83,11 @@ public class LogcatProcessHandler {
         }
     }
 
+    // New method to process event logs
+    private static void processEventLog(String type, String text, String date) {
+        String eventInfo = LogUtils.extractEventFromLog(text);
+        if (eventInfo != null && !eventInfo.isEmpty()) {
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
+        }
+    }
 }

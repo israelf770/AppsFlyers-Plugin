@@ -9,10 +9,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LogUtils {
 
-    //    private static final JBColor CLOSE_BUTTON_COLOR = new JBColor(new Color(255, 0, 0), new Color(255, 0, 0));
     private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
@@ -21,13 +22,13 @@ public class LogUtils {
             int jsonStartIndex = logText.indexOf("{");
             int jsonEndIndex = logText.lastIndexOf("}");
 
-            // בדיקה שהאינדקסים תקפים
+            // Check if indices are valid
             if (jsonStartIndex == -1 || jsonEndIndex == -1 || jsonEndIndex < jsonStartIndex) {
                 System.err.println("Error: JSON not found in log text.");
                 return null;
             }
 
-            // בדיקה שהאינדקסים לא חורגים מאורך המחרוזת
+            // Check if indices are within string bounds
             if (jsonEndIndex + 1 > logText.length()) {
                 System.err.println("Error: Invalid substring range.");
                 return null;
@@ -54,6 +55,43 @@ public class LogUtils {
         }
     }
 
+    // New method to extract event info from logs
+    public static String extractEventFromLog(String logText) {
+        try {
+            StringBuilder result = new StringBuilder();
+
+            // Extract event name and value using regex
+            Pattern eventPattern = Pattern.compile("\"event\":\\s*\"([^\"]+)\"");
+            Pattern valuePattern = Pattern.compile("\"eventvalue\":\\s*\\{([^}]+)\\}");
+
+            Matcher eventMatcher = eventPattern.matcher(logText);
+            if (eventMatcher.find()) {
+                String eventName = eventMatcher.group(1);
+                result.append("Event: ").append(eventName);
+            }
+
+            Matcher valueMatcher = valuePattern.matcher(logText);
+            if (valueMatcher.find()) {
+                String eventValue = valueMatcher.group(1);
+                result.append(" | Value: ").append(eventValue);
+            }
+
+            // Check for app_id in log
+            if (logText.contains("androidevent?app_id=")) {
+                Pattern appIdPattern = Pattern.compile("app_id=([^\\s&]+)");
+                Matcher appIdMatcher = appIdPattern.matcher(logText);
+                if (appIdMatcher.find()) {
+                    String appId = appIdMatcher.group(1);
+                    result.append(" | App ID: ").append(appId);
+                }
+            }
+
+            return result.length() > 0 ? result.toString() : null;
+        } catch (Exception e) {
+            System.err.println("Error extracting event: " + e.getMessage());
+            return null;
+        }
+    }
 
     public static JButton createCopyButton(String log) {
         JButton copyButton = new JButton("Copy");
@@ -66,6 +104,9 @@ public class LogUtils {
             int uidIndex = log.indexOf("UID:");
             if (uidIndex != -1) {
                 toCopy = log.substring(uidIndex + "UID:".length()).trim();
+            } else if (log.contains("Event:")) {
+                // Copy event information
+                toCopy = log.substring(log.indexOf("Event:"));
             }
             copyToClipboard(toCopy);
             // Change button color temporarily to indicate success
@@ -80,12 +121,6 @@ public class LogUtils {
         StringSelection selection = new StringSelection(log);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
-    }
-
-    public static void createTextPanel(String msg){
-        JPanel entryPanel = LogPopup.createLogEntryPanel(msg);
-        LogPopup.getLogPanel().add(entryPanel);
-        LogPopup.getLogPanel().add(Box.createVerticalStrut(10));
     }
 
     public static void clearLogs() {
