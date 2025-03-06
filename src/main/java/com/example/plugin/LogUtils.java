@@ -12,11 +12,11 @@ import java.awt.datatransfer.Clipboard;
 
 public class LogUtils {
 
-//    private static final JBColor CLOSE_BUTTON_COLOR = new JBColor(new Color(255, 0, 0), new Color(255, 0, 0));
+    //    private static final JBColor CLOSE_BUTTON_COLOR = new JBColor(new Color(255, 0, 0), new Color(255, 0, 0));
     private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
-    public static String extractKeyValueFromLog(String logText) {
+    public static String extractMessageFromJson(String type, String logText) {
         try {
             int jsonStartIndex = logText.indexOf("{");
             int jsonEndIndex = logText.lastIndexOf("}");
@@ -34,14 +34,17 @@ public class LogUtils {
             }
 
             String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1).trim();
-
-            System.out.println("Extracted JSON: " + jsonPart); // הדפסת JSON לבדיקה
-
-            // פרסינג ל-JSON
             JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
-            String uid = jsonObject.has("uid") ? jsonObject.get("uid").getAsString() : "UID Not Found";
 
-            return "UID: " + uid;
+            if(type.equals("CONVERSION") || type.equals("LAUNCH")){
+                return  jsonObject.has("uid") ? "UID: " + jsonObject.get("uid").getAsString() : "UID Not Found";
+            } else if (type.equals("INAPP")){
+                String eventName = jsonObject.has("eventName") ? jsonObject.get("eventName").getAsString() : "Event Name Not Found";
+                String eventValue = jsonObject.has("eventValue") ? jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
+                return "\n"+"{"+"\n"+"Event Name: " + eventName + ","+"\n"+" Event Value: " + eventValue+"\n"+"}";
+            }
+            return null;
+
         } catch (JsonSyntaxException e) {
             System.err.println("JSON parsing error: " + e.getMessage());
             return null;
@@ -50,6 +53,7 @@ public class LogUtils {
             return null;
         }
     }
+
 
     public static JButton createCopyButton(String log) {
         JButton copyButton = new JButton("Copy");
@@ -76,6 +80,12 @@ public class LogUtils {
         StringSelection selection = new StringSelection(log);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
+    }
+
+    public static void createTextPanel(String msg){
+        JPanel entryPanel = LogPopup.createLogEntryPanel(msg);
+        LogPopup.getLogPanel().add(entryPanel);
+        LogPopup.getLogPanel().add(Box.createVerticalStrut(10));
     }
 
     public static void clearLogs() {

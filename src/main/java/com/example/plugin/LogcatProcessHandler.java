@@ -56,6 +56,8 @@ public class LogcatProcessHandler {
                     processLog("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
+                }else if (text.contains("INAPP-")) {
+                    processLog("INAPP", text, date);
                 }
             }
         });
@@ -70,12 +72,14 @@ public class LogcatProcessHandler {
             return;
         }
 
-        String formattedLog = LogUtils.extractKeyValueFromLog(text);
+        String formattedLog = LogUtils.extractMessageFromJson(type,text);
+
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
-        }else if (formattedLog != null && !formattedLog.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
+        }else if (formattedLog != null) {
+            String finalFormattedLog = formattedLog;
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
         }
     }
 

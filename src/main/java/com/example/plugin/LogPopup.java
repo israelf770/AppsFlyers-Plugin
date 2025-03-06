@@ -69,14 +69,14 @@ public class LogPopup {
             createPopup();
         }
         if(popup != null){
-        new Thread(() -> {
-            try {
-                Thread.sleep(400); // השהייה של שנייה
-                SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+            new Thread(() -> {
+                try {
+                    Thread.sleep(3000); // השהייה של שנייה
+                    SwingUtilities.invokeLater(() -> updateLogPanel()); // קריאה ל- updateLogPanel על UI Thread
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
     }
 
@@ -148,7 +148,7 @@ public class LogPopup {
         logPanel.repaint();
     }
 
-    private static @NotNull JPanel createLogEntryPanel(String log) {
+    public static @NotNull JPanel createLogEntryPanel(String log) {
         JPanel entryPanel = new JPanel(new BorderLayout());
         entryPanel.setBackground(ENTRY_BACKGROUND_COLOR);
 
