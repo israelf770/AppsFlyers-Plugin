@@ -44,15 +44,11 @@ public class LogcatProcessHandler {
     // משתנה סטטי לשמירת תהליך הלוגקט – אם תהליך רץ, לא נתחיל חדש.
     private static OSProcessHandler logcatProcessHandler = null;
 
-    // משתנה סטטי לשמירת זמן התחלת ההרצה (session)
-    private static long sessionStartTime = 0;
-
     // קבועים לעיצוב הממשק.
     private static final JBColor BACKGROUND_COLOR = new JBColor(new Color(30, 30, 30), new Color(30, 30, 30));
     private static final JBColor ENTRY_BACKGROUND_COLOR = new JBColor(new Color(246, 241, 241), new Color(50, 50, 50));
     private static final JBColor TEXT_AREA_BACKGROUND_COLOR = new JBColor(new Color(255, 255, 255), new Color(40, 40, 40));
     private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
-    private static final JBColor CLOSE_BUTTON_COLOR = new JBColor(new Color(255, 0, 0), new Color(255, 0, 0));
     private static final Font TEXT_AREA_FONT = new Font("Arial", Font.PLAIN, 14);
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
@@ -138,7 +134,6 @@ public class LogcatProcessHandler {
     private static void showDialog(String formattedLogText) {
         // אם הלוג לא קיים עדיין, נוסיף אותו.
         if (!displayedLogs.contains(formattedLogText)) {
-            displayedLogs.add(formattedLogText);
             logListModel.addElement(formattedLogText);
         }
 
@@ -154,9 +149,8 @@ public class LogcatProcessHandler {
         updateLogPanel();
     }
 
-    /**
-     * יוצר את הדיאלוג (JDialog) להצגת הלוגים.
-     */
+    // יוצר את הדיאלוג (JDialog) להצגת הלוגים.
+
     private static void createDialog() {
         // פאנל ראשי עם BorderLayout.
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -190,16 +184,18 @@ public class LogcatProcessHandler {
         dialog.setVisible(true);
     }
 
-    /**
-     * מעדכן את הפאנל עם כל הלוגים.
-     */
+
+    //מעדכן את הפאנל עם כל הלוגים.
+
     private static void updateLogPanel() {
         logPanel.removeAll();
         for (int i = 0; i < logListModel.size(); i++) {
             String log = logListModel.get(i);
-            JPanel entryPanel = createLogEntryPanel(log);
-            logPanel.add(entryPanel);
-            logPanel.add(Box.createVerticalStrut(10)); // רווח בין רשומות.
+            if (!displayedLogs.contains(log)) {
+                JPanel entryPanel = createLogEntryPanel(log);
+                logPanel.add(entryPanel);
+                logPanel.add(Box.createVerticalStrut(10));
+            }// רווח בין רשומות.
         }
         logPanel.revalidate();
         logPanel.repaint();
