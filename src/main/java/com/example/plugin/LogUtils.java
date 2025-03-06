@@ -18,7 +18,9 @@ public class LogUtils {
     private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
+
     public static String extractKeyValueFromLog(String logText) {
+
         try {
             int jsonStartIndex = logText.indexOf("{");
             int jsonEndIndex = logText.lastIndexOf("}");
@@ -36,6 +38,7 @@ public class LogUtils {
             }
 
             String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+
 
             System.out.println("Extracted JSON: " + jsonPart); // Print JSON for debugging
 
@@ -61,6 +64,7 @@ public class LogUtils {
             // Extract event name and value using regex
             Pattern eventPattern = Pattern.compile("\"event\":\\s*\"([^\"]+)\"");
             Pattern valuePattern = Pattern.compile("\"eventvalue\":\\s*\\{([^}]+)\\}");
+
 
             Matcher eventMatcher = eventPattern.matcher(logText);
             if (eventMatcher.find()) {

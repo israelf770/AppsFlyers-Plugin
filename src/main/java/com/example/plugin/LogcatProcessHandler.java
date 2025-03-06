@@ -49,22 +49,26 @@ public class LogcatProcessHandler {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
+
                 if (text.length() <= DATE_LENGTH) return; // Ignore lines that are too short
 
                 String date = text.substring(0, DATE_LENGTH);
 
                 // Handle CONVERSION logs
+
                 if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
                 }
                 // Handle LAUNCH logs
                 else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
+
                 }
                 // Handle EVENT logs - new addition
                 else if (text.contains("preparing data:") &&
                         (text.contains("\"event\":") || text.contains("androidevent?app_id="))) {
                     processEventLog("EVENT", text, date);
+
                 }
             }
         });
@@ -73,17 +77,28 @@ public class LogcatProcessHandler {
     }
 
     private static void processLog(String type, String text, String date) {
+
         if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
             SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
             return;
         }
 
         String formattedLog = LogUtils.extractKeyValueFromLog(text);
+
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
-        } else if (formattedLog != null && !formattedLog.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
+        }else if (formattedLog != null) {
+            String finalFormattedLog = formattedLog;
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+        }
+    }
+
+    // New method to process event logs
+    private static void processEventLog(String type, String text, String date) {
+        String eventInfo = LogUtils.extractEventFromLog(text);
+        if (eventInfo != null && !eventInfo.isEmpty()) {
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
         }
     }
 
