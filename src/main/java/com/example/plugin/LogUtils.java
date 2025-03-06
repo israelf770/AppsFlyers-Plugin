@@ -1,3 +1,4 @@
+// LogUtils.java - Modified version
 package com.example.plugin;
 
 import com.google.gson.JsonObject;
@@ -17,7 +18,9 @@ public class LogUtils {
     private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
-    public static String extractMessageFromJson(String type, String logText) {
+
+    public static String extractKeyValueFromLog(String logText) {
+
         try {
             int jsonStartIndex = logText.indexOf("{");
             int jsonEndIndex = logText.lastIndexOf("}");
@@ -35,17 +38,15 @@ public class LogUtils {
             }
 
             String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+
+
+            System.out.println("Extracted JSON: " + jsonPart); // Print JSON for debugging
+
+            // Parse JSON
             JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
+            String uid = jsonObject.has("uid") ? jsonObject.get("uid").getAsString() : "UID Not Found";
 
-            if(type.equals("CONVERSION") || type.equals("LAUNCH")){
-                return  jsonObject.has("uid") ? "UID: " + jsonObject.get("uid").getAsString() : "UID Not Found";
-            } else if (type.equals("INAPP")){
-                String eventName = jsonObject.has("eventName") ? jsonObject.get("eventName").getAsString() : "Event Name Not Found";
-                String eventValue = jsonObject.has("eventValue") ? jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
-                return "\n"+"{"+"\n"+"Event Name: " + eventName + ","+"\n"+" Event Value: " + eventValue+"\n"+"}";
-            }
-            return null;
-
+            return "UID: " + uid;
         } catch (JsonSyntaxException e) {
             System.err.println("JSON parsing error: " + e.getMessage());
             return null;
@@ -63,6 +64,7 @@ public class LogUtils {
             // Extract event name and value using regex
             Pattern eventPattern = Pattern.compile("\"event\":\\s*\"([^\"]+)\"");
             Pattern valuePattern = Pattern.compile("\"eventvalue\":\\s*\\{([^}]+)\\}");
+
 
             Matcher eventMatcher = eventPattern.matcher(logText);
             if (eventMatcher.find()) {

@@ -49,15 +49,26 @@ public class LogcatProcessHandler {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
-                if (text.length() <= DATE_LENGTH) return; // התעלמות משורות קצרות מדי
+
+                if (text.length() <= DATE_LENGTH) return; // Ignore lines that are too short
 
                 String date = text.substring(0, DATE_LENGTH);
+
+                // Handle CONVERSION logs
+
                 if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
-                } else if (text.contains("LAUNCH-")) {
+                }
+                // Handle LAUNCH logs
+                else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
-                }else if (text.contains("INAPP-")) {
-                    processLog("INAPP", text, date);
+
+                }
+                // Handle EVENT logs - new addition
+                else if (text.contains("preparing data:") &&
+                        (text.contains("\"event\":") || text.contains("androidevent?app_id="))) {
+                    processEventLog("EVENT", text, date);
+
                 }
             }
         });
@@ -72,7 +83,7 @@ public class LogcatProcessHandler {
             return;
         }
 
-        String formattedLog = LogUtils.extractMessageFromJson(type,text);
+        String formattedLog = LogUtils.extractKeyValueFromLog(text);
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
@@ -80,6 +91,14 @@ public class LogcatProcessHandler {
         }else if (formattedLog != null) {
             String finalFormattedLog = formattedLog;
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+        }
+    }
+
+    // New method to process event logs
+    private static void processEventLog(String type, String text, String date) {
+        String eventInfo = LogUtils.extractEventFromLog(text);
+        if (eventInfo != null && !eventInfo.isEmpty()) {
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
         }
     }
 
