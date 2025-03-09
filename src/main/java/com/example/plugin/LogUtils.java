@@ -56,45 +56,6 @@ public class LogUtils {
         }
     }
 
-    // New method to extract event info from logs
-    public static String extractEventFromLog(String logText) {
-        try {
-            StringBuilder result = new StringBuilder();
-
-            // Extract event name and value using regex
-            Pattern eventPattern = Pattern.compile("\"event\":\\s*\"([^\"]+)\"");
-            Pattern valuePattern = Pattern.compile("\"eventvalue\":\\s*\\{([^}]+)\\}");
-
-
-            Matcher eventMatcher = eventPattern.matcher(logText);
-            if (eventMatcher.find()) {
-                String eventName = eventMatcher.group(1);
-                result.append("Event: ").append(eventName);
-            }
-
-            Matcher valueMatcher = valuePattern.matcher(logText);
-            if (valueMatcher.find()) {
-                String eventValue = valueMatcher.group(1);
-                result.append(" | Value: ").append(eventValue);
-            }
-
-            // Check for app_id in log
-            if (logText.contains("androidevent?app_id=")) {
-                Pattern appIdPattern = Pattern.compile("app_id=([^\\s&]+)");
-                Matcher appIdMatcher = appIdPattern.matcher(logText);
-                if (appIdMatcher.find()) {
-                    String appId = appIdMatcher.group(1);
-                    result.append(" | App ID: ").append(appId);
-                }
-            }
-
-            return result.length() > 0 ? result.toString() : null;
-        } catch (Exception e) {
-            System.err.println("Error extracting event: " + e.getMessage());
-            return null;
-        }
-    }
-
     public static JButton createCopyButton(String log) {
         JButton copyButton = new JButton("Copy");
         copyButton.setBackground(COPY_BUTTON_COLOR);

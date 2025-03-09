@@ -56,7 +56,7 @@ public class LogcatProcessHandler {
 
                  if (text.contains("CONVERSION-")) {
                      processLog("CONVERSION", text, date);
-                 }
+                 }        
 
                 if (text.contains("preparing data:")) {
                     System.out.println("Debug: Found preparing data in text: " + text);

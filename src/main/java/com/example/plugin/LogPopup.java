@@ -257,6 +257,8 @@ public class LogPopup {
             if (log.contains("UID")) {
                 buttonsPanel.add(LogUtils.createCopyButton(log));
             }
+        } else if (log.contains("CONVERSION")) {
+            logTextArea.setForeground(JBColor.yellow);
         } else {
             logTextArea.setForeground(JBColor.GRAY);
         }
