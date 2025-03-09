@@ -66,28 +66,27 @@ public class LogcatProcessHandler {
     }
 
     private static void processLog(String type, String text, String date) {
-
         if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
             SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
             return;
         }
 
-        String formattedLog = LogUtils.extractMessageFromJson(type,text);
-
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
-        }else if (formattedLog != null) {
-            String finalFormattedLog = formattedLog;
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+            return;
         }
+        // מוודאים שהתוכן לא נחתך לפני שמפרשים אותו
+        String formattedLog = LogUtils.extractMessageFromJson(type, text);
+
+        if (formattedLog == null || formattedLog.isEmpty()) {
+            logger.warn("Failed to parse log message: " + text);
+            return; // נמנעים מהוספת נתונים חסרים
+        }
+
+        String finalFormattedLog = formattedLog;
+        SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+
     }
 
-    // New method to process event logs
-    private static void processEventLog(String type, String text, String date) {
-        String eventInfo = LogUtils.extractEventFromLog(text);
-        if (eventInfo != null && !eventInfo.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
-        }
-    }
 }

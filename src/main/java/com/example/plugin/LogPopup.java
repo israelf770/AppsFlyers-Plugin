@@ -110,7 +110,7 @@ public class LogPopup {
         showAllButton.addActionListener(e -> filterLogs(null));
         showConversionButton.addActionListener(e -> filterLogs("CONVERSION"));
         showLaunchButton.addActionListener(e -> filterLogs("LAUNCH"));
-        showEventButton.addActionListener(e -> filterLogs("EVENT"));
+        showEventButton.addActionListener(e -> filterLogs("INAPP"));
 
         // Add clear button
         JButton clearButton = new JButton("Clear");
@@ -211,11 +211,11 @@ public class LogPopup {
         logTextArea.setBackground(TEXT_AREA_BACKGROUND_COLOR);
 
         // Color-code by log type
-        if (log.contains("/ EVENT:")) {
+        if (log.contains("/ INAPP:" ) || log.contains("Event Name")) {
             logTextArea.setForeground(JBColor.GREEN);
-        } else if (log.contains("/ CONVERSION")) {
+        } else if (log.contains("CONVERSION")) {
             logTextArea.setForeground(JBColor.RED);
-        } else if (log.contains("/ LAUNCH")) {
+        } else if (log.contains("LAUNCH")) {
             logTextArea.setForeground(JBColor.BLUE);
         } else {
             logTextArea.setForeground(JBColor.GRAY);
