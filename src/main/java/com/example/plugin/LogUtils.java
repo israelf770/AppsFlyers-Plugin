@@ -19,11 +19,11 @@ public class LogUtils {
     private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
 
 
-    public static String extractKeyValueFromLog(String logText) {
+    public static String extractKeyValueFromLog(String type,String logText) {
 
         try {
             int jsonStartIndex = logText.indexOf("{");
-            int jsonEndIndex = logText.lastIndexOf("}");
+            int jsonEndIndex = logText.length()-1;
 
             // Check if indices are valid
             if (jsonStartIndex == -1 || jsonEndIndex == -1 || jsonEndIndex < jsonStartIndex) {
@@ -39,14 +39,17 @@ public class LogUtils {
 
             String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1).trim();
 
-
-            System.out.println("Extracted JSON: " + jsonPart); // Print JSON for debugging
-
-            // Parse JSON
+            if(type.equals("CONVERSION")||type.equals("LAUNCH")){
             JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
-            String uid = jsonObject.has("uid") ? jsonObject.get("uid").getAsString() : "UID Not Found";
+            return  jsonObject.has("uid") ? "UID: " + jsonObject.get("uid").getAsString() : "UID Not Found";
+            } else if (type.equals("EVENT")) {
+                JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
+                String eventName = jsonObject.has("eventName") ?  jsonObject.get("eventName").getAsString() : "Event Name Not Found";
+                String eventData = jsonObject.has("eventData") ?  jsonObject.get("eventName").getAsString() : "Event Name Not Found";
+                return "\n{"+ "\n" +" \"eventName\":"+'\"'+eventName+'\"' +"," + "\n" + " \"eventData\":"+'\"'+eventData +'\"'+ "\n" + "}";
+            }
+            return null;
 
-            return "UID: " + uid;
         } catch (JsonSyntaxException e) {
             System.err.println("JSON parsing error: " + e.getMessage());
             return null;
@@ -67,9 +70,12 @@ public class LogUtils {
             int uidIndex = log.indexOf("UID:");
             if (uidIndex != -1) {
                 toCopy = log.substring(uidIndex + "UID:".length()).trim();
-            } else if (log.contains("Event:")) {
+            } else if (log.contains("EVENT:")) {
                 // Copy event information
-                toCopy = log.substring(log.indexOf("Event:"));
+                int jsonStartIndex = log.indexOf("{");
+                if (jsonStartIndex != -1) {
+                    toCopy = log.substring(jsonStartIndex).trim();
+                }
             }
             copyToClipboard(toCopy);
             // Change button color temporarily to indicate success
