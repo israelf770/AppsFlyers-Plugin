@@ -12,6 +12,8 @@ import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -58,9 +60,18 @@ public class LogPopup {
 
     public static void showPopup(String formattedLogText) {
         if (formattedLogText.equals("new task added: LAUNCH")) {
-            displayedLogs.clear();
+            displayedLogs.removeIf(log -> log.contains("/ EVENT:"));
+            displayedLogs.removeIf(log -> log.contains("LAUNCH"));
             return;
+        }
+        // For EVENT logs, remove previous events and add the new one
+        if (formattedLogText.contains("/ EVENT:")) {
+            // Remove all previous EVENT logs
+            displayedLogs.removeIf(log -> log.contains("/ EVENT:"));
+            // Add the new event
+            displayedLogs.add(formattedLogText);
         } else if (!displayedLogs.contains(formattedLogText)) {
+            // For non-EVENT logs, keep the old behavior
             displayedLogs.add(formattedLogText);
         }
 
@@ -81,7 +92,6 @@ public class LogPopup {
     }
 
     private static void createPopup() {
-
         // Main container with BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(BACKGROUND_COLOR);
@@ -90,9 +100,10 @@ public class LogPopup {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttonPanel.setBackground(BACKGROUND_COLOR);
 
-        // Add filter buttons
+        // Create buttons
         JToggleButton showAllButton = new JToggleButton("All");
         JToggleButton showLaunchButton = new JToggleButton("LAUNCH");
+        JToggleButton showConversionButton = new JToggleButton("CONVERSION");
         JToggleButton showEventButton = new JToggleButton("EVENT");
 
         // Set selected by default
@@ -102,22 +113,34 @@ public class LogPopup {
         ButtonGroup filterGroup = new ButtonGroup();
         filterGroup.add(showAllButton);
         filterGroup.add(showLaunchButton);
+        filterGroup.add(showConversionButton);
         filterGroup.add(showEventButton);
 
         // Add filter action listeners
         showAllButton.addActionListener(e -> filterLogs(null));
         showLaunchButton.addActionListener(e -> filterLogs("LAUNCH"));
+        showConversionButton.addActionListener(e -> filterLogs("CONVERSION"));
         showEventButton.addActionListener(e -> filterLogs("EVENT"));
 
-        // Add clear button
-        JButton clearButton = new JButton("Clear");
-        clearButton.addActionListener(e -> LogUtils.clearLogs());
+        // Add refresh button
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> {
+            // Close current popup
+            if (popup != null) {
+                popup.dispose();
+                popup = null;
+            }
+            // Clear logs and restart logcat
+            displayedLogs.clear();
+            LogcatProcessHandler.startLogcat();
+        });
 
-        // Add buttons to panel
+        // Add buttons to panel in correct order
         buttonPanel.add(showAllButton);
         buttonPanel.add(showLaunchButton);
+        buttonPanel.add(showConversionButton);
         buttonPanel.add(showEventButton);
-        buttonPanel.add(clearButton);
+        buttonPanel.add(refreshButton);
 
         // Log panel
         logPanel = new JPanel();
@@ -130,34 +153,28 @@ public class LogPopup {
         // Add log panel to a scroll pane
         JScrollPane scrollPane = new JBScrollPane(logPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
-        scrollPane.setPreferredSize(new Dimension(600, 400)); // Larger size for better visibility
+        scrollPane.setPreferredSize(new Dimension(600, 400));
 
         // Add scroll pane to the center of the main panel
         mainPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // === Create JDialog in place of JBPopup ===
+        // Create JDialog
         popup = new JDialog();
         popup.setTitle("Logcat Monitor");
-        popup.setModal(false);        // Non-blocking
-        popup.setResizable(true);     // Make it resizable
+        popup.setModal(false);
+        popup.setResizable(true);
         popup.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         popup.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                // When window is closed (after DISPOSE), reset the variable
                 popup = null;
             }
         });
 
-        // Add our mainPanel to the JDialog's content pane
         popup.getContentPane().add(mainPanel);
-
-        // Pack and center
         popup.pack();
         popup.setLocationRelativeTo(null);
-
-        // Make sure to show it
         popup.setVisible(true);
     }
 
@@ -206,30 +223,65 @@ public class LogPopup {
         logTextArea.setEditable(false);
         logTextArea.setBackground(TEXT_AREA_BACKGROUND_COLOR);
 
-        // Color-code by log type
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonsPanel.setBackground(ENTRY_BACKGROUND_COLOR);
+
         if (log.contains("/ EVENT:")) {
             logTextArea.setForeground(JBColor.GREEN);
+
+            // Only add JSON copy button for events
+            JButton jsonCopyButton = new JButton("Copy JSON");
+            jsonCopyButton.setBackground(new JBColor(new Color(0, 150, 50), new Color(0, 150, 50)));
+            jsonCopyButton.setFont(new Font("Arial", Font.BOLD, 12));
+            jsonCopyButton.setFocusPainted(false);
+            jsonCopyButton.setPreferredSize(new Dimension(100, 30));
+
+            jsonCopyButton.addActionListener(e -> {
+                String jsonData = extractJsonFromEventLog(log);
+                if (jsonData != null) {
+                    StringSelection selection = new StringSelection(jsonData);
+                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                    clipboard.setContents(selection, selection);
+
+                    // Visual feedback
+                    jsonCopyButton.setBackground(JBColor.green);
+                    new Timer(500, evt ->
+                            jsonCopyButton.setBackground(new JBColor(new Color(0, 150, 50), new Color(0, 150, 50)))
+                    ).start();
+                }
+            });
+
+            buttonsPanel.add(jsonCopyButton);
         } else if (log.contains("/ LAUNCH")) {
             logTextArea.setForeground(JBColor.BLUE);
+            if (log.contains("UID")) {
+                buttonsPanel.add(LogUtils.createCopyButton(log));
+            }
         } else {
             logTextArea.setForeground(JBColor.GRAY);
         }
 
-        // Add copy button for logs with copyable content
-        if (log.contains("UID") || log.contains("Event:") || log.contains("app_id=")) {
-            JButton copyButton = LogUtils.createCopyButton(log);
-            entryPanel.add(copyButton, BorderLayout.SOUTH);
-        }
-
-        // Add text area to a scroll pane for long content
         JScrollPane textScrollPane = new JBScrollPane(logTextArea);
         textScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
-        // Add text area & copy button
         entryPanel.add(textScrollPane, BorderLayout.CENTER);
+        entryPanel.add(buttonsPanel, BorderLayout.SOUTH);
         entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        entryPanel.setPreferredSize(new Dimension(550, 100)); // Taller for better visibility
+        entryPanel.setPreferredSize(new Dimension(550, 100));
 
         return entryPanel;
+    }
+
+    private static String extractJsonFromEventLog(String log) {
+        try {
+            int startIndex = log.indexOf("preparing data:") + "preparing data:".length();
+            String jsonPart = log.substring(startIndex).trim();
+
+            // Clean up the JSON string if needed
+            return jsonPart.replaceAll("\\\\", "");
+        } catch (Exception e) {
+            System.err.println("Error extracting JSON: " + e.getMessage());
+            return null;
+        }
     }
 }

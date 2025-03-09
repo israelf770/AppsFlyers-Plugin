@@ -54,15 +54,24 @@ public class LogcatProcessHandler {
 
                 String date = text.substring(0, DATE_LENGTH);
 
+                 if (text.contains("CONVERSION-")) {
+                     processLog("CONVERSION", text, date);
+                 }
+
+                if (text.contains("preparing data:")) {
+                    System.out.println("Debug: Found preparing data in text: " + text);
+                }
+
                 // Handle LAUNCH logs
                  if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
 
                 }
                 // Handle EVENT logs - new addition
-                else if (text.contains("preparing data:") && (text.contains("\"event\":") || text.contains("androidevent?app_id="))) {
-                    processEventLog("EVENT", text, date);
-                }
+                 else if (text.contains("preparing data:")) {
+                     System.out.println("Debug: Processing event log");
+                     processEventLog("EVENT", text, date);
+                 }
             }
         });
 
@@ -88,9 +97,18 @@ public class LogcatProcessHandler {
     }
     // New method to process event logs
     private static void processEventLog(String type, String text, String date) {
-        String eventInfo = LogUtils.extractEventFromLog(text);
-        if (eventInfo != null && !eventInfo.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
+        // Extract everything after "preparing data:"
+        int startIndex = text.indexOf("preparing data:");
+        if (startIndex != -1) {
+            String eventData = text.substring(startIndex + "preparing data:".length()).trim();
+            System.out.println("Debug: Event data: " + eventData);
+
+            // Show the raw event data in the popup
+            SwingUtilities.invokeLater(() -> {
+                String logEntry = date + " / " + type + ":\n" + eventData;
+                System.out.println("Debug: Showing popup with: " + logEntry);
+                LogPopup.showPopup(logEntry);
+            });
         }
     }
 }
