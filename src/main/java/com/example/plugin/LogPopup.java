@@ -92,7 +92,6 @@ public class LogPopup {
 
         // Add filter buttons
         JToggleButton showAllButton = new JToggleButton("All");
-        JToggleButton showConversionButton = new JToggleButton("CONVERSION");
         JToggleButton showLaunchButton = new JToggleButton("LAUNCH");
         JToggleButton showEventButton = new JToggleButton("EVENT");
 
@@ -102,13 +101,11 @@ public class LogPopup {
         // Button group to make them mutually exclusive
         ButtonGroup filterGroup = new ButtonGroup();
         filterGroup.add(showAllButton);
-        filterGroup.add(showConversionButton);
         filterGroup.add(showLaunchButton);
         filterGroup.add(showEventButton);
 
         // Add filter action listeners
         showAllButton.addActionListener(e -> filterLogs(null));
-        showConversionButton.addActionListener(e -> filterLogs("CONVERSION"));
         showLaunchButton.addActionListener(e -> filterLogs("LAUNCH"));
         showEventButton.addActionListener(e -> filterLogs("EVENT"));
 
@@ -118,7 +115,6 @@ public class LogPopup {
 
         // Add buttons to panel
         buttonPanel.add(showAllButton);
-        buttonPanel.add(showConversionButton);
         buttonPanel.add(showLaunchButton);
         buttonPanel.add(showEventButton);
         buttonPanel.add(clearButton);
@@ -213,8 +209,6 @@ public class LogPopup {
         // Color-code by log type
         if (log.contains("/ EVENT:")) {
             logTextArea.setForeground(JBColor.GREEN);
-        } else if (log.contains("/ CONVERSION")) {
-            logTextArea.setForeground(JBColor.RED);
         } else if (log.contains("/ LAUNCH")) {
             logTextArea.setForeground(JBColor.BLUE);
         } else {

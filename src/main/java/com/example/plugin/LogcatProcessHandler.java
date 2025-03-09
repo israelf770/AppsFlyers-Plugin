@@ -54,21 +54,14 @@ public class LogcatProcessHandler {
 
                 String date = text.substring(0, DATE_LENGTH);
 
-                // Handle CONVERSION logs
-
-                if (text.contains("CONVERSION-")) {
-                    processLog("CONVERSION", text, date);
-                }
                 // Handle LAUNCH logs
-                else if (text.contains("LAUNCH-")) {
+                 if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
 
                 }
                 // Handle EVENT logs - new addition
-                else if (text.contains("preparing data:") &&
-                        (text.contains("\"event\":") || text.contains("androidevent?app_id="))) {
+                else if (text.contains("preparing data:") && (text.contains("\"event\":") || text.contains("androidevent?app_id="))) {
                     processEventLog("EVENT", text, date);
-
                 }
             }
         });
@@ -93,15 +86,6 @@ public class LogcatProcessHandler {
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
         }
     }
-
-    // New method to process event logs
-    private static void processEventLog(String type, String text, String date) {
-        String eventInfo = LogUtils.extractEventFromLog(text);
-        if (eventInfo != null && !eventInfo.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
-        }
-    }
-
     // New method to process event logs
     private static void processEventLog(String type, String text, String date) {
         String eventInfo = LogUtils.extractEventFromLog(text);
