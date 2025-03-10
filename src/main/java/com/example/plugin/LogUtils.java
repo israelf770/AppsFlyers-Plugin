@@ -10,8 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class LogUtils {
 

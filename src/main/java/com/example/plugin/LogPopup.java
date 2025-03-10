@@ -1,9 +1,5 @@
 package com.example.plugin;
 
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.ui.popup.JBPopupFactory; // Note: no longer used, but you can remove if you like
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
@@ -12,16 +8,13 @@ import com.intellij.util.ui.JBUI;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class LogPopup {
     private static List<String> displayedLogs = new ArrayList<>();
@@ -200,15 +193,15 @@ public class LogPopup {
         // Get all unique LAUNCH and CONVERSION logs
         List<String> launchLogs = displayedLogs.stream()
                 .filter(log -> log.contains("/ LAUNCH"))
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> conversionLogs = displayedLogs.stream()
                 .filter(log -> log.contains("/ CONVERSION"))
-                .collect(Collectors.toList());
+                .toList();
 
         List<String> eventLogs = displayedLogs.stream()
                 .filter(log -> log.contains("/ EVENT"))
-                .collect(Collectors.toList());
+                .toList();
 
         // Create final list: all LAUNCH and CONVERSION logs, but only most recent EVENT
         List<String> logsToShow = new ArrayList<>();
@@ -239,7 +232,7 @@ public class LogPopup {
         } else {
             List<String> filteredLogs = displayedLogs.stream()
                     .filter(log -> log.contains("/ " + filterType))
-                    .collect(Collectors.toList());
+                    .toList();
 
             if (!filteredLogs.isEmpty()) {
                 if (filterType.equals("EVENT")) {

@@ -1,7 +1,5 @@
 package com.example.plugin;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
@@ -44,14 +42,10 @@ public class LogcatProcessHandler {
 
             // Only show device selector if no device is selected
             if (selectedDeviceId == null) {
-                SwingUtilities.invokeLater(() -> {
-                    showDeviceSelector(devices, adbPath);
-                });
+                SwingUtilities.invokeLater(() -> showDeviceSelector(devices, adbPath));
             } else {
                 // Start logging with the selected device
-                SwingUtilities.invokeLater(() -> {
-                    startLoggingForDevice(selectedDeviceId, adbPath);
-                });
+                SwingUtilities.invokeLater(() -> startLoggingForDevice(selectedDeviceId, adbPath));
             }
 
         } catch (Exception e) {
@@ -288,7 +282,7 @@ public class LogcatProcessHandler {
                 // Handle EVENT logs - new addition
                  else if (text.contains("preparing data:")) {
                      System.out.println("Debug: Processing event log");
-                     processEventLog("EVENT", text, date);
+                     processEventLog(text, date);
                  }
             }
         });
@@ -309,12 +303,11 @@ public class LogcatProcessHandler {
             int resIndex = text.indexOf("result");
             SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
         }else if (formattedLog != null) {
-            String finalFormattedLog = formattedLog;
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
         }
     }
     // New method to process event logs
-    private static void processEventLog(String type, String text, String date) {
+    private static void processEventLog(String text, String date) {
         // Extract everything after "preparing data:"
         int startIndex = text.indexOf("preparing data:");
         if (startIndex != -1) {
@@ -323,7 +316,7 @@ public class LogcatProcessHandler {
 
             // Show the raw event data in the popup
             SwingUtilities.invokeLater(() -> {
-                String logEntry = date + " / " + type + ":\n" + eventData;
+                String logEntry = date + " / " + "EVENT" + ":\n" + eventData;
                 System.out.println("Debug: Showing popup with: " + logEntry);
                 LogPopup.showPopup(logEntry);
             });
