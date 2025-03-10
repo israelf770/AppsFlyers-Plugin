@@ -164,26 +164,40 @@ public class LogPopup {
         popup.setVisible(true);
     }
 
-    public static void showPopup(String log) {
+    public static void showPopup(String formattedLogText) {
+        if (formattedLogText.equals("new task added: LAUNCH")) {
+            displayedLogs.removeIf(log -> log.contains("LAUNCH"));
+            return;
+        }
+
+        // For EVENT logs, remove previous events and add the new one
+        if (formattedLogText.contains("/ EVENT:")) {
+            // Remove all previous EVENT logs
+            displayedLogs.removeIf(log -> log.contains("/ EVENT:"));
+            // Add the new event
+            displayedLogs.add(formattedLogText);
+        } else if (!displayedLogs.contains(formattedLogText)) {
+            // For non-EVENT logs, keep the old behavior
+            displayedLogs.add(formattedLogText);
+        }
+
+        // If we haven't created a JDialog yet, do it now
         if (popup == null) {
             createPopup();
         }
 
-        // Add log only if it doesn't exist yet
-        if (!displayedLogs.contains(log)) {
-            displayedLogs.add(log);
-            updateLogPanel();
-
-            // Scroll to bottom
-            SwingUtilities.invokeLater(() -> {
-                Component[] components = logPanel.getComponents();
-                if (components.length > 0) {
-                    Rectangle bounds = components[components.length - 1].getBounds();
-                    logPanel.scrollRectToVisible(bounds);
+        if (popup != null) {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(400); // Delay of 400ms
+                    SwingUtilities.invokeLater(() -> updateLogPanel()); // Call updateLogPanel on UI Thread
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            });
+            }).start();
         }
     }
+
 
     public static void updateLogPanel() {
         if (popup == null) return;
