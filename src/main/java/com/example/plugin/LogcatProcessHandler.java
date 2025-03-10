@@ -1,5 +1,7 @@
 package com.example.plugin;
 
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
@@ -27,6 +29,10 @@ public class LogcatProcessHandler {
     private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
     private static String selectedDeviceId = null;
 
+    // Add this method to reset device selection
+    public static void resetSelectedDevice() {
+        selectedDeviceId = null;
+    }
     public static void startLogcat() {
         try {
             String adbPath = getAdbPath();
@@ -36,32 +42,37 @@ public class LogcatProcessHandler {
                 throw new RuntimeException("No ADB devices found");
             }
 
-            if (devices.size() > 1 && selectedDeviceId == null) {
+            // Only show device selector if no device is selected
+            if (selectedDeviceId == null) {
                 SwingUtilities.invokeLater(() -> {
                     showDeviceSelector(devices, adbPath);
                 });
-                return; // Return early since we're continuing asynchronously
-            } else if (devices.size() == 1) {
-                selectedDeviceId = devices.get(0);
+            } else {
+                // Start logging with the selected device
+                SwingUtilities.invokeLater(() -> {
+                    startLoggingForDevice(selectedDeviceId, adbPath);
+                });
             }
 
-            if (selectedDeviceId == null) {
-                return;
-            }
+        } catch (Exception e) {
+            logger.error("Error starting adb logcat", e);
+        }
+    }
 
-            LogPopup.getDisplayedLogs().clear();
-            if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
-                LogPopup.getPopup().dispose();
-                LogPopup.setPopup(null);
-            }
-
-            ProcessBuilder builder = new ProcessBuilder(adbPath, "-s", selectedDeviceId, "logcat", "*:V");
+    // Add this method to start logging for a specific device
+    private static void startLoggingForDevice(String deviceId, String adbPath) {
+        try {
+            ProcessBuilder builder = new ProcessBuilder(adbPath, "-s", deviceId, "logcat");
             Process process = builder.start();
             OSProcessHandler processHandler = getOsProcessHandler(process);
             processHandler.startNotify();
 
+            // Create the popup window if it doesn't exist
+            if (LogPopup.getPopup() == null) {
+                LogPopup.createPopup();
+            }
         } catch (Exception e) {
-            logger.error("Error starting adb logcat", e);
+            logger.error("Error starting logcat for device: " + deviceId, e);
         }
     }
 
@@ -89,6 +100,12 @@ public class LogcatProcessHandler {
 
     private static void showDeviceSelector(List<String> devices, String adbPath) {
         try {
+            // Clear existing logs when showing device selector
+            LogPopup.getDisplayedLogs().clear();
+            if (LogPopup.getPopup() != null) {
+                LogPopup.getPopup().dispose();
+                LogPopup.setPopup(null);
+            }
             JDialog dialog = new JDialog((Frame) null, "ADB Device Manager", true);
             dialog.setLayout(new BorderLayout(10, 10));
             dialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -115,11 +132,6 @@ public class LogcatProcessHandler {
             JButton refreshButton = new JButton("Refresh");
             JButton okButton = new JButton("Connect");
             JButton cancelButton = new JButton("Cancel");
-
-            // Style buttons
-            styleButton(refreshButton);
-            styleButton(okButton);
-            styleButton(cancelButton);
 
             // Initially disable the Connect button
             okButton.setEnabled(false);
@@ -220,33 +232,6 @@ public class LogcatProcessHandler {
         });
 
         return devicePanel;
-    }
-
-    private static void styleButton(JButton button) {
-        button.setPreferredSize(new Dimension(100, 30));
-        button.setFocusPainted(false);
-        button.setFont(new Font("Arial", Font.BOLD, 12));
-
-        if (button.getText().equals("Connect")) {
-            button.setBackground(new JBColor(new Color(0, 122, 255), new Color(0, 122, 255)));
-            button.setForeground(JBColor.WHITE);
-
-            // Ensure text remains visible when disabled
-            button.setDisabledIcon(null);
-            UIManager.put("Button.disabledText", JBColor.GRAY);
-
-            // Override disabled appearance
-            button.addPropertyChangeListener("enabled", evt -> {
-                boolean enabled = (Boolean) evt.getNewValue();
-                if (enabled) {
-                    button.setBackground(new JBColor(new Color(0, 122, 255), new Color(0, 122, 255)));
-                    button.setForeground(JBColor.WHITE);
-                } else {
-                    button.setBackground(new JBColor(Gray._180, Gray._100));
-                    button.setForeground(new JBColor(Gray._120, Gray._160));
-                }
-            });
-        }
     }
 
     private static String getDeviceInfo(String adbPath, String deviceId) {

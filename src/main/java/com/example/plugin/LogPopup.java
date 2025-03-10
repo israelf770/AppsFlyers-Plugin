@@ -19,7 +19,9 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LogPopup {
     private static List<String> displayedLogs = new ArrayList<>();
@@ -58,40 +60,7 @@ public class LogPopup {
         return displayedLogs;
     }
 
-    public static void showPopup(String formattedLogText) {
-        if (formattedLogText.equals("new task added: LAUNCH")) {
-            displayedLogs.removeIf(log -> log.contains("/ EVENT:"));
-            displayedLogs.removeIf(log -> log.contains("LAUNCH"));
-            return;
-        }
-        // For EVENT logs, remove previous events and add the new one
-        if (formattedLogText.contains("/ EVENT:")) {
-            // Remove all previous EVENT logs
-            displayedLogs.removeIf(log -> log.contains("/ EVENT:"));
-            // Add the new event
-            displayedLogs.add(formattedLogText);
-        } else if (!displayedLogs.contains(formattedLogText)) {
-            // For non-EVENT logs, keep the old behavior
-            displayedLogs.add(formattedLogText);
-        }
-
-        // If we haven't created a JDialog yet, do it now
-        if (popup == null) {
-            createPopup();
-        }
-        if(popup != null){
-            new Thread(() -> {
-                try {
-                    Thread.sleep(400); // Delay of 400ms
-                    SwingUtilities.invokeLater(LogPopup::updateLogPanel); // Call updateLogPanel on UI Thread
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        }
-    }
-
-    private static void createPopup() {
+    static void createPopup() {
         // Main container with BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(BACKGROUND_COLOR);
@@ -105,11 +74,20 @@ public class LogPopup {
         JToggleButton showLaunchButton = new JToggleButton("LAUNCH");
         JToggleButton showConversionButton = new JToggleButton("CONVERSION");
         JToggleButton showEventButton = new JToggleButton("EVENT");
+        JButton changeDeviceButton = new JButton("Change Device");
+
+        // Add action to change device button
+        changeDeviceButton.addActionListener(e -> {
+            // Reset device and restart logcat
+            LogcatProcessHandler.resetSelectedDevice();
+            LogUtils.clearLogs();
+            LogcatProcessHandler.startLogcat();
+        });
 
         // Set selected by default
         showAllButton.setSelected(true);
 
-        // Button group to make them mutually exclusive
+        // Button group for filter buttons
         ButtonGroup filterGroup = new ButtonGroup();
         filterGroup.add(showAllButton);
         filterGroup.add(showLaunchButton);
@@ -122,18 +100,33 @@ public class LogPopup {
         showConversionButton.addActionListener(e -> filterLogs("CONVERSION"));
         showEventButton.addActionListener(e -> filterLogs("EVENT"));
 
+
+        // Add buttons to panel in correct order
+        buttonPanel.add(showAllButton);
+        buttonPanel.add(showLaunchButton);
+        buttonPanel.add(showConversionButton);
+        buttonPanel.add(showEventButton);
+        buttonPanel.add(Box.createHorizontalStrut(20)); // Add spacing
+        buttonPanel.add(changeDeviceButton);
+
         // Add refresh button
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> {
-            // Close current popup
-            if (popup != null) {
-                popup.dispose();
-                popup = null;
-            }
-            // Clear logs and restart logcat
+            // Keep only CONVERSION logs
+            List<String> conversionLogs = displayedLogs.stream()
+                    .filter(log -> log.contains("CONVERSION"))
+                    .toList();
+
             displayedLogs.clear();
+            displayedLogs.addAll(conversionLogs);
+
+            // Update panel
+            updateLogPanel();
+
+            // Restart logcat
             LogcatProcessHandler.startLogcat();
         });
+
 
         // Add buttons to panel in correct order
         buttonPanel.add(showAllButton);
@@ -178,33 +171,90 @@ public class LogPopup {
         popup.setVisible(true);
     }
 
+    public static void showPopup(String log) {
+        if (popup == null) {
+            createPopup();
+        }
+
+        // Add log only if it doesn't exist yet
+        if (!displayedLogs.contains(log)) {
+            displayedLogs.add(log);
+            updateLogPanel();
+
+            // Scroll to bottom
+            SwingUtilities.invokeLater(() -> {
+                Component[] components = logPanel.getComponents();
+                if (components.length > 0) {
+                    Rectangle bounds = components[components.length - 1].getBounds();
+                    logPanel.scrollRectToVisible(bounds);
+                }
+            });
+        }
+    }
+
     public static void updateLogPanel() {
         if (popup == null) return;
 
         logPanel.removeAll();
 
-        for (String log : displayedLogs) {
+        // Get all unique LAUNCH and CONVERSION logs
+        List<String> launchLogs = displayedLogs.stream()
+                .filter(log -> log.contains("/ LAUNCH"))
+                .collect(Collectors.toList());
+
+        List<String> conversionLogs = displayedLogs.stream()
+                .filter(log -> log.contains("/ CONVERSION"))
+                .collect(Collectors.toList());
+
+        List<String> eventLogs = displayedLogs.stream()
+                .filter(log -> log.contains("/ EVENT"))
+                .collect(Collectors.toList());
+
+        // Create final list: all LAUNCH and CONVERSION logs, but only most recent EVENT
+        List<String> logsToShow = new ArrayList<>();
+        logsToShow.addAll(launchLogs);  // Add all LAUNCH logs
+        logsToShow.addAll(conversionLogs);  // Add all CONVERSION logs
+        if (!eventLogs.isEmpty()) {
+            logsToShow.add(eventLogs.get(eventLogs.size() - 1));  // Add only most recent EVENT
+        }
+
+        // Add panels for all logs
+        for (String log : logsToShow) {
             JPanel entryPanel = createLogEntryPanel(log);
             logPanel.add(entryPanel);
-            logPanel.add(Box.createVerticalStrut(10)); // Space between logs
+            logPanel.add(Box.createVerticalStrut(10));
         }
 
         logPanel.revalidate();
         logPanel.repaint();
     }
 
-    // New method to filter logs by type
     private static void filterLogs(String filterType) {
         if (popup == null) return;
-
         logPanel.removeAll();
 
-        for (String log : displayedLogs) {
-            // If no filter or log contains the filter type, add it
-            if (filterType == null || log.contains("/ " + filterType)) {
-                JPanel entryPanel = createLogEntryPanel(log);
-                logPanel.add(entryPanel);
-                logPanel.add(Box.createVerticalStrut(10));
+        if (filterType == null) {
+            // Show all types
+            updateLogPanel();
+        } else {
+            List<String> filteredLogs = displayedLogs.stream()
+                    .filter(log -> log.contains("/ " + filterType))
+                    .collect(Collectors.toList());
+
+            if (!filteredLogs.isEmpty()) {
+                if (filterType.equals("EVENT")) {
+                    // For EVENT, show only most recent
+                    String mostRecent = filteredLogs.get(filteredLogs.size() - 1);
+                    JPanel entryPanel = createLogEntryPanel(mostRecent);
+                    logPanel.add(entryPanel);
+                } else {
+                    // For LAUNCH and CONVERSION, show all unique logs
+                    for (String log : filteredLogs) {
+                        JPanel entryPanel = createLogEntryPanel(log);
+                        logPanel.add(entryPanel);
+                        logPanel.add(Box.createVerticalStrut(10));
+                    }
+                }
             }
         }
 
