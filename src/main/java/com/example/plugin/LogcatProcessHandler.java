@@ -73,20 +73,22 @@ package com.example.plugin;
 
                     String date = text.substring(0, 14);
 
-                    if (text.contains("CONVERSION-")) {
-                        processLog("CONVERSION", text, date);
-                    }
+                 if (text.contains("CONVERSION-")) {
+                     processLog("CONVERSION", text, date);
+                 }
 
-                    if (text.contains("LAUNCH-")) {
-                        processLog("LAUNCH", text, date);
-                    } else if (text.contains("preparing data:")) {
-                        processEventLog(text, date);
-                    }
+                 if (text.contains("LAUNCH-")) {
+                    processLog("LAUNCH", text, date);
                 }
-            });
+                // Handle EVENT logs - new addition
+                 else if (text.contains("preparing data:")) {
+                     processEventLog("EVENT", text, date);
+                 }
+            }
+        });
 
-            return processHandler;
-        }
+        return processHandler;
+    }
 
         private static void processLog(String type, String text, String date) {
             if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
@@ -94,27 +96,26 @@ package com.example.plugin;
                 return;
             }
 
-            String formattedLog = LogUtils.extractKeyValueFromLog(text);
+        String formattedLog = LogUtils.extractKeyValueFromLog(type,text);
 
-            if (text.contains("result:")) {
-                int resIndex = text.indexOf("result");
-                SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
-            } else if (formattedLog != null) {
-                SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + formattedLog));
-            }
-        }
-
-        private static void processEventLog(String text, String date) {
-            int startIndex = text.indexOf("preparing data:");
-            if (startIndex != -1) {
-                String eventData = text.substring(startIndex + "preparing data:".length()).trim();
-                System.out.println("Debug: Event data: " + eventData);
-
-                SwingUtilities.invokeLater(() -> {
-                    String logEntry = date + " / " + "EVENT" + ":\n" + eventData;
-                    System.out.println("Debug: Showing popup with: " + logEntry);
-                    LogPopup.showPopup(logEntry);
-                });
-            }
+        if (text.contains("result:")) {
+            int resIndex = text.indexOf("result");
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
+        }else if (formattedLog != null) {
+            String finalFormattedLog = formattedLog;
+            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
         }
     }
+    // New method to process event logs
+    private static void processEventLog(String type, String text, String date) {
+        String eventData = LogUtils.extractKeyValueFromLog(type, text);
+
+        if (eventData != null) {
+            System.out.println("Event Data: " + eventData);
+           SwingUtilities.invokeLater(() -> {
+               String logEntry = date + " / " + type + ":\n" + eventData;
+               LogPopup.showPopup(logEntry);
+           });
+        }
+    }
+}
