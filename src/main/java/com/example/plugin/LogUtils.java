@@ -92,4 +92,6 @@ public class LogUtils {
         LogPopup.getLogPanel().revalidate();
         LogPopup.getLogPanel().repaint();
     }
+
+
 }

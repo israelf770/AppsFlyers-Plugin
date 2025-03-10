@@ -4,9 +4,11 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.ui.popup.JBPopupFactory; // Note: no longer used, but you can remove if you like
+import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
+import com.intellij.util.ui.JBUI;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 
 import javax.swing.*;
@@ -27,12 +29,10 @@ public class LogPopup {
 
     private static JPanel logPanel = new JPanel();
 
-    private static final JBColor BACKGROUND_COLOR = new JBColor(new Color(30, 30, 30), new Color(30, 30, 30));
-    private static final JBColor ENTRY_BACKGROUND_COLOR = new JBColor(new Color(246, 241, 241), new Color(50, 50, 50));
-    private static final JBColor TEXT_AREA_BACKGROUND_COLOR = new JBColor(new Color(255, 255, 255), new Color(40, 40, 40));
+    private static final JBColor BACKGROUND_COLOR = new JBColor(Gray._30, Gray._30);
+    private static final JBColor ENTRY_BACKGROUND_COLOR = new JBColor(new Color(246, 241, 241), Gray._50);
+    private static final JBColor TEXT_AREA_BACKGROUND_COLOR = new JBColor(Gray._255, Gray._40);
     private static final Font TEXT_AREA_FONT = new Font("Arial", Font.PLAIN, 14);
-    private static String text = "";
-
     // Getters/Setters
     public static void setPopup(JDialog newPopup) {
         popup = newPopup;
@@ -83,7 +83,7 @@ public class LogPopup {
             new Thread(() -> {
                 try {
                     Thread.sleep(400); // Delay of 400ms
-                    SwingUtilities.invokeLater(() -> updateLogPanel()); // Call updateLogPanel on UI Thread
+                    SwingUtilities.invokeLater(LogPopup::updateLogPanel); // Call updateLogPanel on UI Thread
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -268,7 +268,7 @@ public class LogPopup {
 
         entryPanel.add(textScrollPane, BorderLayout.CENTER);
         entryPanel.add(buttonsPanel, BorderLayout.SOUTH);
-        entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        entryPanel.setBorder(JBUI.Borders.empty(10));
         entryPanel.setPreferredSize(new Dimension(550, 100));
 
         return entryPanel;
