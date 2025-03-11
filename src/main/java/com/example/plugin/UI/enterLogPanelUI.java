@@ -23,12 +23,13 @@ public class enterLogPanelUI {
         // Create a rounded panel for the log entry.
         RoundedPanel entryPanel = new RoundedPanel(12, Gray._60);
         entryPanel.setLayout(new BorderLayout());
-        entryPanel.setBorder(JBUI.Borders.empty(8, 10)); // Padding פנימי
+        entryPanel.setBorder(JBUI.Borders.empty(8, 10));
 
         // Create a label to display the log text.
         JLabel logLabel = new JLabel(log);
         logLabel.setForeground(JBColor.foreground());
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
+
 
         // Attach a mouse listener to show a balloon on hover and copy on click.
         logLabel.addMouseListener(new MouseAdapter() {
@@ -54,13 +55,13 @@ public class enterLogPanelUI {
                         .setShowCallout(false)
                         .setAnimationCycle(200)
                         .setFillColor(new JBColor(new Color(0, 0, 0, 0), new Color(0,0,0,0)))
-                        .setBorderColor(new JBColor(new Color(0, 0, 0, 0), new Color(0,0,0,0)))
+                        .setBorderColor(new JBColor(new Color(60, 60, 0, 0), new Color(60,60,0,0)))
                         .setBorderInsets(JBUI.emptyInsets())
                         .createBalloon();
 
 
-                int x = logLabel.getWidth() - 15;      // horizontal center of the label
-                int y = logLabel.getHeight() - 15;         // just below the bottom edge of the label
+                int x = logLabel.getWidth() - logLabel.getWidth() + 15;      // horizontal center of the label
+                int y = logLabel.getHeight() / 2;         // just below the bottom edge of the label
                 RelativePoint rp = new RelativePoint(logLabel, new Point(x, y));
 
                 // Then show the balloon below that point:
@@ -71,15 +72,9 @@ public class enterLogPanelUI {
 
             @Override
             public void mouseExited(MouseEvent e) {
-                // Start a timer to hide the balloon after a delay
-                // timer to delay hiding
-                Timer hideTimer = new Timer(300, evt -> {
                     if (balloon != null && !balloon.isDisposed()) {
                         balloon.hide();
                     }
-                });
-                hideTimer.setRepeats(false);
-                hideTimer.start();
             }
 
 

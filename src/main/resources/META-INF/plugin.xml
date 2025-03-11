@@ -25,11 +25,6 @@
 
 
     <actions>
-
-        <action id="com.example.plugin.StartLogcatAction" class="com.example.plugin.StartLogcatAction"
-                text="Com.Example.Plugin.StartLogcatAction" description="Com.example.plugin.startLogcatAction">
-            <add-to-group group-id="RunnerActions" anchor="first"/>
-        </action>
     </actions>
 
 </idea-plugin>

@@ -1,6 +1,7 @@
 package com.example.plugin.actions;
 
 import com.example.plugin.LogcatProcessHandler;
+import com.example.plugin.UI.LogToolWindowFactory;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +19,7 @@ public class RunAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        LogcatProcessHandler.resetSelectedDevice();
+        LogToolWindowFactory.loadDevices();
         LogcatProcessHandler.startLogcat();
     }
 }

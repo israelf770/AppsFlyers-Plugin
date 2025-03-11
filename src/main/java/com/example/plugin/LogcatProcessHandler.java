@@ -25,17 +25,10 @@ import javax.swing.SwingUtilities;
             try {
                 String adbPath = GetInfo.getAdbPath();
                 List<String> devices = GetInfo.getConnectedDevices(adbPath);
-
                 if (devices.isEmpty()) {
                     throw new RuntimeException("No ADB devices found");
                 }
-
-                if (selectedDeviceId == null) {
-                    SwingUtilities.invokeLater(() -> DeviceSelector.showDeviceSelector(devices, adbPath));
-                } else {
-                    SwingUtilities.invokeLater(() -> startLoggingForDevice(selectedDeviceId, adbPath));
-                }
-
+                SwingUtilities.invokeLater(() -> startLoggingForDevice(selectedDeviceId, adbPath));
             } catch (Exception e) {
                 logger.error("Error starting adb logcat", e);
             }
@@ -64,22 +57,21 @@ import javax.swing.SwingUtilities;
 
                     String date = text.substring(0, 14);
 
-                 if (text.contains("CONVERSION-")) {
-                     processLog("CONVERSION", text, date);
-                 }
+                   if (text.contains("CONVERSION-")) {
+                        processLog("CONVERSION", text, date);
+                    }
 
-                 if (text.contains("LAUNCH-")) {
-                    processLog("LAUNCH", text, date);
+                    if (text.contains("LAUNCH-")) {
+                        processLog("LAUNCH", text, date);
+                    }
+                    // Handle EVENT logs - new addition
+                    else if (text.contains("preparing data:")) {
+                        processEventLog("EVENT", text, date);
+                    }
                 }
-                // Handle EVENT logs - new addition
-                 else if (text.contains("preparing data:")) {
-                     processEventLog("EVENT", text, date);
-                 }
-            }
-        });
-
-        return processHandler;
-    }
+            });
+            return processHandler;
+        }
 
     private static void processLog(String type, String text, String date) {
 

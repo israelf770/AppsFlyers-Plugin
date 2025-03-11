@@ -3,9 +3,6 @@ package com.example.plugin;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Clipboard;
 
 public class LogUtils {
 
@@ -48,13 +45,4 @@ public class LogUtils {
             return null;
         }
     }
-
-
-
-    private static void copyToClipboard(String log) {
-        StringSelection selection = new StringSelection(log);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection, selection);
-    }
-
 }
