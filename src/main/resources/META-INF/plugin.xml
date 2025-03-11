@@ -1,4 +1,5 @@
 <idea-plugin>
+
     <id>com.example.plugin</id>
     <name>Logcat</name>
     <vendor email="israelmanor11@domain.com" url="https://www.appsflyer.com">appsflyer</vendor>
@@ -14,17 +15,20 @@
 
     <!-- Notification group definition -->
     <extensions defaultExtensionNs="com.intellij">
-        <notificationGroup id="Logcat Listener" displayType="BALLOON"/>
+        <toolWindow
+                id="Logcat Monitor"
+                anchor="right"
+                secondary="true"
+                icon="/icons/appsflyer.svg"
+                factoryClass="com.example.plugin.UI.LogToolWindowFactory"/>
     </extensions>
 
 
     <actions>
-        <action id="com.example.plugin.StartLogcatAction"
-                class="com.example.plugin.StartLogcatAction"
-                text="Start Logcat Listener"
-                description="Starts listening to Logcat output"
-                icon="/icons/appsflyer.svg">
-            <add-to-group group-id="MainToolbarCenter" anchor="last"/>
+
+        <action id="com.example.plugin.StartLogcatAction" class="com.example.plugin.StartLogcatAction"
+                text="Com.Example.Plugin.StartLogcatAction" description="Com.example.plugin.startLogcatAction">
+            <add-to-group group-id="RunnerActions" anchor="first"/>
         </action>
     </actions>
 

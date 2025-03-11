@@ -6,14 +6,9 @@ package com.example.plugin;
     import com.intellij.openapi.diagnostic.Logger;
     import com.intellij.openapi.util.Key;
     import org.jetbrains.annotations.NotNull;
-
-    import javax.swing.*;
-    import java.io.BufferedReader;
-    import java.io.IOException;
-    import java.io.InputStreamReader;
     import java.nio.charset.StandardCharsets;
-    import java.util.ArrayList;
     import java.util.List;
+import javax.swing.SwingUtilities;
 
     public class LogcatProcessHandler {
         private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
@@ -52,10 +47,6 @@ package com.example.plugin;
                 Process process = builder.start();
                 OSProcessHandler processHandler = getOsProcessHandler(process);
                 processHandler.startNotify();
-
-                if (LogPopup.getPopup() == null) {
-                    LogPopup.createPopup();
-                }
             } catch (Exception e) {
                 logger.error("Error starting logcat for device: " + deviceId, e);
             }
@@ -90,32 +81,34 @@ package com.example.plugin;
         return processHandler;
     }
 
-        private static void processLog(String type, String text, String date) {
-            if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
-                SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
-                return;
-            }
+    private static void processLog(String type, String text, String date) {
 
-        String formattedLog = LogUtils.extractKeyValueFromLog(type,text);
+        if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs("new task added: LAUNCH"));
+            return;
+        }
+
+        String formattedLog = LogUtils.extractMessageFromJson(type,text);
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex)));
         }else if (formattedLog != null) {
             String finalFormattedLog = formattedLog;
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + " " + finalFormattedLog));
         }
     }
+
     // New method to process event logs
     private static void processEventLog(String type, String text, String date) {
-        String eventData = LogUtils.extractKeyValueFromLog(type, text);
+        String eventInfo = LogUtils.extractMessageFromJson(type, text);
 
-        if (eventData != null) {
-            System.out.println("Event Data: " + eventData);
-           SwingUtilities.invokeLater(() -> {
-               String logEntry = date + " / " + type + ":\n" + eventData;
-               LogPopup.showPopup(logEntry);
-           });
+        if (eventInfo != null) {
+            System.out.println("Event Data: " + eventInfo);
+            SwingUtilities.invokeLater(() -> {
+                String logEntry = date + " / " + type + ":\n" + eventInfo;
+                SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + logEntry));
+            });
         }
     }
 }
