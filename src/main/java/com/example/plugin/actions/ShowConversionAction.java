@@ -1,6 +1,5 @@
 package com.example.plugin.actions;
 
-import com.example.plugin.LogcatProcessHandler;
 import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
