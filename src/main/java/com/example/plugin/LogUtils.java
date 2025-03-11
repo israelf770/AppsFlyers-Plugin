@@ -32,8 +32,8 @@ public class LogUtils {
             } else if (type.equals("EVENT")) {
                 JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
                 String eventName = jsonObject.has("eventName") ?  jsonObject.get("eventName").getAsString() : "Event Name Not Found";
-                String eventData = jsonObject.has("eventData") ?  jsonObject.get("eventName").getAsString() : "Event Name Not Found";
-                return "\n{"+ "\n" +" \"eventName\":"+'\"'+eventName+'\"' +"," + "\n" + " \"eventData\":"+'\"'+eventData +'\"'+ "\n" + "}";
+                String eventData = jsonObject.has("eventValue") ?  jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
+                return "\n{"+ "\n" +" \"eventName\":"+'\"'+eventName+'\"' +"," + "\n" + " \"eventValue\":"+'\"'+eventData +'\"'+ "\n" + "}";
             }
             return null;
 
@@ -45,4 +45,5 @@ public class LogUtils {
             return null;
         }
     }
+
 }

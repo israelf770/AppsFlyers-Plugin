@@ -1,6 +1,6 @@
 package com.example.plugin;
 import com.example.plugin.UI.LogToolWindowFactory;
-import com.example.plugin.UI.enterLogPanelUI;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,28 +36,24 @@ public class showLogs {
     /**
      * Add or update a log entry and refresh the display
      */
-    public static void showUpdateLogs(String formattedLogText) {
-        if (formattedLogText.equals("new task added: LAUNCH")) {
-            // Clear logs when a new LAUNCH task is added
-            allLogs.clear();
-            refreshLogDisplay();
-            return;
+    public static void showUpdateLogs(String formattedLogText, String type) {
+        if (formattedLogText.contains(type) && !allLogs.contains(formattedLogText)) {
+            // Remove all previous EVENT logs
+            allLogs.removeIf(log -> log.contains(type));
+            // Add the new event
+            allLogs.add(formattedLogText);
         }
 
-        // Only add if not already present to avoid duplicates
-        if (!allLogs.contains(formattedLogText)) {
-            allLogs.add(formattedLogText);
 
             // Schedule the UI update after a short delay
             new Thread(() -> {
                 try {
                     Thread.sleep(400); // Delay of 400ms
-                    refreshLogDisplay();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }).start();
-        }
+
     }
 
     /**

@@ -1,14 +1,14 @@
 package com.example.plugin;
 
-    import com.intellij.execution.process.OSProcessHandler;
-    import com.intellij.execution.process.ProcessAdapter;
-    import com.intellij.execution.process.ProcessEvent;
-    import com.intellij.openapi.diagnostic.Logger;
-    import com.intellij.openapi.util.Key;
-    import org.jetbrains.annotations.NotNull;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Key;
+import org.jetbrains.annotations.NotNull;
     import java.nio.charset.StandardCharsets;
     import java.util.List;
-import javax.swing.SwingUtilities;
+    import javax.swing.SwingUtilities;
 
     public class LogcatProcessHandler {
         private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
@@ -82,20 +82,16 @@ import javax.swing.SwingUtilities;
     }
 
     private static void processLog(String type, String text, String date) {
-
-        if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
-            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs("new task added: LAUNCH"));
-            return;
-        }
-
         String formattedLog = LogUtils.extractMessageFromJson(type,text);
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
-            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex)));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex),
+                    type+": " +"result"));
         }else if (formattedLog != null) {
             String finalFormattedLog = formattedLog;
-            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + " " + finalFormattedLog));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + " " + finalFormattedLog,
+                    type+" " + finalFormattedLog));
         }
     }
 
@@ -107,7 +103,7 @@ import javax.swing.SwingUtilities;
             System.out.println("Event Data: " + eventInfo);
             SwingUtilities.invokeLater(() -> {
                 String logEntry = date + " / " + type + ":\n" + eventInfo;
-                SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + logEntry));
+                SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + logEntry, type));
             });
         }
     }
