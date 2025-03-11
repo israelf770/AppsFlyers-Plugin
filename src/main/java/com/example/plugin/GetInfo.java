@@ -30,10 +30,13 @@ public class GetInfo {
     }
 
     public static String getAdbPath() {
-        if (System.getProperty("os.name").toLowerCase().contains("win")) {
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("win")) {
             return System.getProperty("user.home") + "\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe";
-        } else if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        } else if (osName.contains("mac")) {
             return "/Users/" + System.getProperty("user.name") + "/Library/Android/sdk/platform-tools/adb";
+        } else if (osName.contains("nix") || osName.contains("nux") || osName.contains("aix")) {
+            return System.getProperty("user.home") + "/Android/Sdk/platform-tools/adb";
         } else {
             throw new RuntimeException("Unsupported OS");
         }

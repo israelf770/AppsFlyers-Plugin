@@ -20,6 +20,6 @@ public class ShowConversionAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         // הקריאה לפונקציה שסיננת קודם:
-        showLogs.filterLogs("conversion");
+        showLogs.filterLogs("CONVERSION");
     }
 }

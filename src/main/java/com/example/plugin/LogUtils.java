@@ -48,13 +48,4 @@ public class LogUtils {
             return null;
         }
     }
-
-
-
-    private static void copyToClipboard(String log) {
-        StringSelection selection = new StringSelection(log);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection, selection);
-    }
-
 }
