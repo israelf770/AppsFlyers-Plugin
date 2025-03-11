@@ -15,11 +15,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Arrays;
-import java.util.List;
 
 public class LogToolWindowFactory implements ToolWindowFactory {
 
-    // Store reference to the log panel for updates
+    // Reference to the log panel for updates
     private static JPanel logPanel;
 
     @Override
@@ -61,19 +60,22 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         mainPanel.add(scrollPane, BorderLayout.CENTER);
     }
 
-    // Method to update log content in the tab
+    /**
+     * Updates the log panel with logs that match the current filter
+     */
     public static void updateLogContentPanel() {
         if (logPanel != null) {
             logPanel.removeAll();
 
-            // Use filtered logs if available, otherwise use all logs
-            List<String> logsToShow = showLogs.getFilteredLogs().isEmpty() && showLogs.getCurrentFilter() == null ?
-                    showLogs.getDisplayedLogs() : showLogs.getFilteredLogs();
+            String currentFilter = showLogs.getCurrentFilter();
 
-            for (String log : logsToShow) {
-                JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
-                logPanel.add(entryPanel);
-                logPanel.add(Box.createVerticalStrut(10)); // Space between entries
+            // Iterate through all logs and add only those that match the current filter
+            for (String log : showLogs.getAllLogs()) {
+                if (showLogs.logMatchesFilter(log, currentFilter)) {
+                    JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
+                    logPanel.add(entryPanel);
+                    logPanel.add(Box.createVerticalStrut(10)); // Space between entries
+                }
             }
 
             logPanel.revalidate();
