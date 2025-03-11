@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.ui.JBColor;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -14,9 +13,7 @@ import java.util.regex.Pattern;
 
 public class LogUtils {
 
-    private static final JBColor COPY_BUTTON_COLOR = new JBColor(new Color(0, 122, 255), new Color(0, 122, 255));
-    private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 12);
-
+    // method to extract needed info from logs
     public static String extractMessageFromJson(String type, String logText) {
         try {
             int jsonStartIndex = logText.indexOf("{");
@@ -55,14 +52,14 @@ public class LogUtils {
         }
     }
 
-    // New method to extract event info from logs
+    // method to extract event info from logs
     public static String extractEventFromLog(String logText) {
         try {
             StringBuilder result = new StringBuilder();
 
             // Extract event name and value using regex
             Pattern eventPattern = Pattern.compile("\"event\":\\s*\"([^\"]+)\"");
-            Pattern valuePattern = Pattern.compile("\"eventvalue\":\\s*\\{([^}]+)\\}");
+            Pattern valuePattern = Pattern.compile("\"eventvalue\":\\s*\\{([^}]+)}");
 
             Matcher eventMatcher = eventPattern.matcher(logText);
             if (eventMatcher.find()) {
@@ -86,7 +83,7 @@ public class LogUtils {
                 }
             }
 
-            return result.length() > 0 ? result.toString() : null;
+            return !result.isEmpty() ? result.toString() : null;
         } catch (Exception e) {
             System.err.println("Error extracting event: " + e.getMessage());
             return null;
@@ -95,10 +92,15 @@ public class LogUtils {
 
     public static JButton createCopyButton(String log) {
         JButton copyButton = new JButton("Copy");
-        copyButton.setBackground(COPY_BUTTON_COLOR);
-        copyButton.setFont(BUTTON_FONT);
+
+        copyButton.setBackground(null);
+        copyButton.setOpaque(false);
+        copyButton.setFont(new Font("Arial", Font.BOLD, 12));
         copyButton.setFocusPainted(false);
-        copyButton.setPreferredSize(new Dimension(100, 30));
+        copyButton.setBorder(BorderFactory.createEmptyBorder(8,10,8,10));
+
+        copyButton.setPreferredSize(new Dimension(50, 40));
+
         copyButton.addActionListener(e -> {
             String toCopy = log;
             int uidIndex = log.indexOf("UID:");
@@ -109,6 +111,7 @@ public class LogUtils {
                 toCopy = log.substring(log.indexOf("Event:"));
             }
             copyToClipboard(toCopy);
+
             // Change button color temporarily to indicate success
             Color originalColor = copyButton.getBackground();
             copyButton.setBackground(JBColor.green);
@@ -123,10 +126,4 @@ public class LogUtils {
         clipboard.setContents(selection, selection);
     }
 
-    public static void clearLogs() {
-        LogPopup.getDisplayedLogs().clear();
-        LogPopup.getLogPanel().removeAll();
-        LogPopup.getLogPanel().revalidate();
-        LogPopup.getLogPanel().repaint();
-    }
 }

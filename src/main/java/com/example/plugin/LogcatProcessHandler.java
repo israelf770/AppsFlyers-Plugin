@@ -14,11 +14,7 @@ public class LogcatProcessHandler {
 
     public static void startLogcat() {
         try {
-            LogPopup.getDisplayedLogs().clear();
-            if (LogPopup.getPopup() != null && LogPopup.getPopup().isVisible()) {
-                LogPopup.getPopup().dispose();
-                LogPopup.setPopup(null);
-            }
+            showLogs.getDisplayedLogs().clear();
             String adbPath;
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
                 adbPath = System.getProperty("user.home") + "\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe";
@@ -67,7 +63,7 @@ public class LogcatProcessHandler {
     private static void processLog(String type, String text, String date) {
 
         if ("LAUNCH".equals(type) && text.contains("new task added: LAUNCH")) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup("new task added: LAUNCH"));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs("new task added: LAUNCH"));
             return;
         }
 
@@ -75,10 +71,10 @@ public class LogcatProcessHandler {
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + text.substring(resIndex)));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex)));
         }else if (formattedLog != null) {
             String finalFormattedLog = formattedLog;
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + " " + finalFormattedLog));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + " " + finalFormattedLog));
         }
     }
 
@@ -86,7 +82,7 @@ public class LogcatProcessHandler {
     private static void processEventLog(String type, String text, String date) {
         String eventInfo = LogUtils.extractEventFromLog(text);
         if (eventInfo != null && !eventInfo.isEmpty()) {
-            SwingUtilities.invokeLater(() -> LogPopup.showPopup(date + " / " + type + ": " + eventInfo));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + eventInfo));
         }
     }
 }
