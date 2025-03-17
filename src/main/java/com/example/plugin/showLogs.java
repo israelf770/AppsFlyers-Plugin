@@ -39,12 +39,11 @@ public class showLogs {
             // Add the new event
             allLogs.add(formattedLogText);
         }
-
-
             // Schedule the UI update after a short delay
             new Thread(() -> {
                 try {
                     Thread.sleep(400); // Delay of 400ms
+                    refreshLogDisplay();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
