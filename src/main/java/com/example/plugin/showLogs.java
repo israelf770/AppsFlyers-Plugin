@@ -1,52 +1,68 @@
 package com.example.plugin;
 import com.example.plugin.UI.LogToolWindowFactory;
-import com.example.plugin.UI.enterLogPanelUI;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class showLogs {
-    private static final List<String> displayedLogs = new ArrayList<>();
-    private static final JPanel logPanel = new JPanel();
+    // Single list to store all logs
+    private static final List<String> allLogs = new ArrayList<>();
 
-    public static List<String> getDisplayedLogs() {
-        return displayedLogs;
+    // Track current filter
+    private static String currentFilter = null;
+
+    //Get the complete list of logs
+
+    public static List<String> getAllLogs() {
+        return allLogs;
     }
 
-    public static void showUpdateLogs(String formattedLogText) {
-        if (formattedLogText.equals("new task added: LAUNCH")) {
-            displayedLogs.clear();
-            return;
-        } else if (!displayedLogs.contains(formattedLogText)) {
-            displayedLogs.add(formattedLogText);
+    //Get the current active filter
+
+    public static String getCurrentFilter() {
+        return currentFilter;
+    }
+
+    //Check if a log entry matches the current filter
+    public static boolean logMatchesFilter(String log, String filter) {
+        return filter == null || log.contains("/ " + filter);
+    }
+
+    //Add or update a log entry and refresh the display
+
+
+    public static void showUpdateLogs(String formattedLogText, String type) {
+        if (formattedLogText.contains(type) && !allLogs.contains(formattedLogText)) {
+            // Remove all previous EVENT logs
+            allLogs.removeIf(log -> log.contains(type));
+            // Add the new event
+            allLogs.add(formattedLogText);
+            System.out.println(formattedLogText);
         }
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(400); // Delay of 400ms
-                SwingUtilities.invokeLater(LogToolWindowFactory::updateLogContentPanel); // Call updateLogPanel on UI Thread
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+            // Schedule the UI update after a short delay
+            new Thread(() -> {
+                try {
+                    Thread.sleep(400); // Delay of 400ms
+                    refreshLogDisplay();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
 
     }
 
+    //Set the current filter and refresh the display
 
     public static void filterLogs(String filterType) {
+        // Update the filter and refresh the UI
+        currentFilter = filterType;
+        refreshLogDisplay();
+    }
 
-        logPanel.removeAll();
+    //Helper method to refresh the log display on the UI thread
 
-        for (String log : displayedLogs) {
-            // If no filter or log contains the filter type, add it
-            if (filterType == null || log.contains("/ " + filterType)) {
-                JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
-                logPanel.add(entryPanel);
-                logPanel.add(Box.createVerticalStrut(10));
-            }
-        }
-
-        logPanel.revalidate();
-        logPanel.repaint();
+    private static void refreshLogDisplay() {
+        SwingUtilities.invokeLater(LogToolWindowFactory::updateLogContentPanel);
     }
 }

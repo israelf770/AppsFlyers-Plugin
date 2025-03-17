@@ -15,12 +15,11 @@ public class ShowEventAction extends AnAction {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/eventIcon.svg", MyClass.class);
     }
     public ShowEventAction() {
-        super("EVENT", "Show event logs", MyClass.MY_ICON);        // טקסט הכפתור
+        super("EVENT", "Show event logs", MyClass.MY_ICON);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        // הקריאה לפונקציה שסיננת קודם:
         showLogs.filterLogs("EVENT");
     }
 }

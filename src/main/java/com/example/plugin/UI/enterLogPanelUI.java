@@ -7,6 +7,7 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.JBUI;
+import kotlinx.html.S;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -16,6 +17,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class enterLogPanelUI {
 
@@ -100,11 +103,18 @@ public class enterLogPanelUI {
         return entryPanel;
     }
 
-    private static void copyToClipboard(String text) {
-        StringSelection selection = new StringSelection(text);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection, selection);
-    }
+   private static void copyToClipboard(String text) {
+       String uid = null;
+       String obj = null;
+       if(text.contains("UID")) {
+           uid = text.substring(text.indexOf("UID")+4);
+       } else if (text.contains("{") && text.contains("}")) {
+           obj = text.substring(text.indexOf("{"), text.indexOf("}")+1);
+       }
+       StringSelection selection = new StringSelection(uid != null ? uid : obj != null ? obj : text);
+       Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+       clipboard.setContents(selection, selection);
+   }
 
 
     // מחלקה פנימית לציור פאנל מעוגל

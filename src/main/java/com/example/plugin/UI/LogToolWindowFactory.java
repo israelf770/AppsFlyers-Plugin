@@ -19,10 +19,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LogToolWindowFactory implements ToolWindowFactory {
 
-    // נשמור הפניה לפאנל הלוגים לצורך עדכון
+    // Reference to the log panel for updates
     private static JPanel logPanel;
     public static JComboBox<String> deviceCombo;
 
@@ -51,8 +53,11 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         // בעת בחירה ב-ComboBox, נעדכן את המכשיר הנבחר
         deviceCombo.addActionListener(e -> {
             String selectedDevice = (String) deviceCombo.getSelectedItem();
+            selectedDevice =  ExtractParentheses(selectedDevice);
+
             if (selectedDevice != null && !"No devices".equals(selectedDevice)
                     && !"Error retrieving devices".equals(selectedDevice)) {
+                showLogs.getAllLogs().clear();
                 LogcatProcessHandler.setSelectedDeviceId(selectedDevice);
                 LogcatProcessHandler.startLogcat();
             }
@@ -63,7 +68,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         mainPanel.add(topPanel, BorderLayout.NORTH);
         topPanel.add(deviceCombo, BorderLayout.CENTER);
 
-        // פעולות לכותרת הטאב
+        // Actions for the tab header
         AnAction showAllAction = new ShowAllAction();
         AnAction showConversionAction = new ShowConversionAction();
         AnAction showEventAction = new ShowEventAction();
@@ -72,17 +77,17 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
         toolWindow.setTitleActions(Arrays.asList(
                 RunAction,
-                new Separator(),        // מפריד לפני הכפתורים הבאים
+                new Separator(),
                 showAllAction,
                 new Separator(),
                 showConversionAction,
                 new Separator(),
                 showEventAction,
-                new Separator(),        // מפריד לפני הכפתורים הבאים
+                new Separator(),
                 showLaunchAction
         ));
 
-        // פאנל הלוגים
+        // Log panel
         logPanel = new JPanel();
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logPanel.setBackground(Gray._30);
@@ -131,17 +136,43 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         return true;
     }
 
-    // מתודה לעדכון תוכן הלוגים בתוך הטאב
+    //Updates the log panel with logs that match the current filter
+
     public static void updateLogContentPanel() {
         if (logPanel != null) {
             logPanel.removeAll();
-            for (String log : showLogs.getDisplayedLogs()) {
-                JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
-                logPanel.add(entryPanel);
-                logPanel.add(Box.createVerticalStrut(10)); // רווח בין רשומות
+
+            String currentFilter = showLogs.getCurrentFilter();
+
+            // Iterate through all logs and add only those that match the current filter
+            for (String log : showLogs.getAllLogs()) {
+                if (showLogs.logMatchesFilter(log, currentFilter)) {
+                    JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
+                    logPanel.add(entryPanel);
+                    logPanel.add(Box.createVerticalStrut(10)); // Space between entries
+                }
             }
+
             logPanel.revalidate();
             logPanel.repaint();
         }
     }
+
+
+    public static String ExtractParentheses(String currentDevice) {
+        // הביטוי הרגולרי מחפש כל מה שבין סוגריים
+        if (currentDevice == null) {
+            return null;
+        }
+        Pattern pattern = Pattern.compile("\\(([^)]+)\\)");
+        Matcher matcher = pattern.matcher(currentDevice);
+        String insideParentheses = null;
+        if (matcher.find()) {
+            // הקבוצה הראשונה מכילה את הטקסט שבתוך הסוגריים
+            insideParentheses = matcher.group(1);
+            System.out.println("Inside parentheses: " + insideParentheses);
+        }
+        return insideParentheses;
+    }
+
 }
