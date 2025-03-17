@@ -70,15 +70,15 @@ import org.jetbrains.annotations.NotNull;
 
                  if (text.contains("CONVERSION-")) {
                      processLog("CONVERSION", text, date);
-                 }
-
-                 if (text.contains("LAUNCH-")) {
+                 }else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
-                }
-                 else if (text.contains("preparing data:")) {
+                 } else if (text.contains("preparing data:")) {
                      processEventLog("EVENT", text, date);
+                 } else if (text.contains("onDeepLinking")){
+                     processLog("DEEPLINK", text, date);
+                     System.out.println(text);
                  }
-            }
+                }
         });
 
         return processHandler;
@@ -92,9 +92,8 @@ import org.jetbrains.annotations.NotNull;
             SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex),
                     type+": " +"result"));
         }else if (formattedLog != null) {
-            String finalFormattedLog = formattedLog;
-            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + " " + finalFormattedLog,
-                    type+" " + finalFormattedLog));
+            SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + " " + formattedLog,
+                    type+" " + formattedLog));
         }
     }
 
@@ -103,7 +102,6 @@ import org.jetbrains.annotations.NotNull;
         String eventInfo = LogUtils.extractMessageFromJson(type, text);
 
         if (eventInfo != null) {
-            System.out.println("Event Data: " + eventInfo);
             SwingUtilities.invokeLater(() -> {
                 String logEntry = date + " / " + type + ":\n" + eventInfo;
                 SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(date + " / " + type + ": " + logEntry, type));

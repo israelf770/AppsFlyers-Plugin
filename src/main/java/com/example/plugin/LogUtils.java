@@ -15,6 +15,7 @@ public class LogUtils {
             // Check if indices are valid
             if (jsonStartIndex == -1 || jsonEndIndex == -1 || jsonEndIndex < jsonStartIndex) {
                 System.err.println("Error: JSON not found in log text.");
+                System.out.println(logText);
                 return null;
             }
 
@@ -24,7 +25,7 @@ public class LogUtils {
                 return null;
             }
 
-            String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex + 1).trim();
+            String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex).trim();
 
             if(type.equals("CONVERSION")||type.equals("LAUNCH")){
             JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
@@ -34,6 +35,9 @@ public class LogUtils {
                 String eventName = jsonObject.has("eventName") ?  jsonObject.get("eventName").getAsString() : "Event Name Not Found";
                 String eventData = jsonObject.has("eventValue") ?  jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
                 return "\n{"+ "\n" +" \"eventName\":"+'\"'+eventName+'\"' +"," + "\n" + " \"eventValue\":"+'\"'+eventData +'\"'+ "\n" + "}";
+            } else if (type.equals("DEEPLINK")) {
+                System.out.println("DDL JSON pars");
+                return jsonPart;
             }
             return null;
 
