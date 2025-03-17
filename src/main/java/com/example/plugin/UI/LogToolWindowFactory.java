@@ -3,7 +3,6 @@ package com.example.plugin.UI;
 import com.example.plugin.GetInfo;
 import com.example.plugin.LogcatProcessHandler;
 import com.example.plugin.actions.*;
-//import com.example.plugin.DeviceSelectorAction;
 import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
@@ -25,7 +24,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
     // נשמור הפניה לפאנל הלוגים לצורך עדכון
     private static JPanel logPanel;
-    private static JComboBox<String> deviceCombo;
+    public static JComboBox<String> deviceCombo;
 
 
 
@@ -45,13 +44,15 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         deviceCombo = new JComboBox<>();
         deviceCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, deviceCombo.getPreferredSize().height));
         deviceCombo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+//        int selectedIndex = deviceCombo.getSelectedIndex();
+//        deviceCombo.setSelectedIndex(selectedIndex); // ברירת מחדל - הראשון
+
         // בעת בחירה ב-ComboBox, נעדכן את המכשיר הנבחר
         deviceCombo.addActionListener(e -> {
             String selectedDevice = (String) deviceCombo.getSelectedItem();
-            int selectedIndex = deviceCombo.getSelectedIndex();
             if (selectedDevice != null && !"No devices".equals(selectedDevice)
                     && !"Error retrieving devices".equals(selectedDevice)) {
-                deviceCombo.setSelectedIndex(selectedIndex); // ברירת מחדל - הראשון
                 LogcatProcessHandler.setSelectedDeviceId(selectedDevice);
                 LogcatProcessHandler.startLogcat();
             }
@@ -61,8 +62,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         // הוסף את topPanel לחלק העליון של mainPanel
         mainPanel.add(topPanel, BorderLayout.NORTH);
         topPanel.add(deviceCombo, BorderLayout.CENTER);
-
-//        AnAction deviceSelectorAction = new DeviceSelectorAction();
 
         // פעולות לכותרת הטאב
         AnAction showAllAction = new ShowAllAction();
@@ -79,10 +78,8 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                 showConversionAction,
                 new Separator(),
                 showEventAction,
-                new Separator(),
-                showLaunchAction,
-                new Separator()
-//                deviceSelectorAction
+                new Separator(),        // מפריד לפני הכפתורים הבאים
+                showLaunchAction
         ));
 
         // פאנל הלוגים
@@ -106,7 +103,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         try {
             // קבל רשימת מכשירים
             List<String> devices = GetInfo.getConnectedDevices(GetInfo.getAdbPath());
-//            deviceCombo.removeAllItems();
+            deviceCombo.removeAllItems();
             if (devices.isEmpty()) {
                 if (containsDevice(deviceCombo, "No devices")) {
                     deviceCombo.addItem("No devices");
@@ -114,10 +111,10 @@ public class LogToolWindowFactory implements ToolWindowFactory {
             } else {
                 for (String device : devices) {
                     if (containsDevice(deviceCombo, device)) {
-                        deviceCombo.addItem(device);
+                        String displayName = GetInfo.getDeviceName(GetInfo.getAdbPath(), device);
+                        deviceCombo.addItem(displayName + " (" + device + ")");
                     }
                 }
-                deviceCombo.setSelectedIndex(0); // ברירת מחדל - הראשון
             }
         } catch (IOException e) {
             deviceCombo.removeAllItems();
@@ -134,20 +131,14 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         return true;
     }
 
-
-
-
-    // Method to update log content in the tab
+    // מתודה לעדכון תוכן הלוגים בתוך הטאב
     public static void updateLogContentPanel() {
         if (logPanel != null) {
             logPanel.removeAll();
             for (String log : showLogs.getDisplayedLogs()) {
                 JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
-                // Let the entry panel fill available width while its height is dynamic.
-                entryPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-                entryPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
                 logPanel.add(entryPanel);
-                logPanel.add(Box.createVerticalStrut(10)); // Vertical spacing between entries
+                logPanel.add(Box.createVerticalStrut(10)); // רווח בין רשומות
             }
             logPanel.revalidate();
             logPanel.repaint();

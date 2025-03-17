@@ -16,7 +16,7 @@
     <!-- Notification group definition -->
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow
-                id="Logcat Monitor"
+                id="AppsFlyer LogCat Analyzer"
                 anchor="right"
                 secondary="true"
                 icon="/icons/appsflyer.svg"

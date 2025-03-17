@@ -46,6 +46,10 @@ import javax.swing.SwingUtilities;
         }
 
         private static @NotNull OSProcessHandler getOsProcessHandler(Process process) {
+            String timeStamp = null;
+
+//            OSProcessHandler processHandler = new OSProcessHandler(process, "adb logcat","-T",timeStamp, StandardCharsets.UTF_8);
+
             OSProcessHandler processHandler = new OSProcessHandler(process, "adb logcat", StandardCharsets.UTF_8);
 
             processHandler.addProcessListener(new ProcessAdapter() {

@@ -29,6 +29,44 @@ public class GetInfo {
         return devices;
     }
 
+    public static String getDeviceName(String adbPath, String deviceID) throws IOException {
+        // אם מדובר באמולטור (ID מתחיל ב־"emulator-"):
+        if (deviceID.startsWith("emulator-")) {
+            // הפקודה adb -s emulator-XXXX emu avd name
+            ProcessBuilder builder = new ProcessBuilder(adbPath, "-s", deviceID, "emu", "avd", "name");
+            Process process = builder.start();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()))) {
+                String avdName = reader.readLine(); // שם ה־AVD (שורה ראשונה)
+                if (avdName != null && !avdName.trim().isEmpty()) {
+                    return "Emulator: " + avdName.trim();
+                } else {
+                    return deviceID; // fallback
+                }
+            }
+        } else {
+            // כנראה מכשיר פיזי: ניקח model + manufacturer
+            String manufacturer = getProp(adbPath, deviceID, "ro.product.manufacturer");
+            String model = getProp(adbPath, deviceID, "ro.product.model");
+            if (manufacturer == null) manufacturer = "";
+            if (model == null) model = "";
+            String fullName = (manufacturer + " " + model).trim();
+            return fullName.isEmpty() ? deviceID : fullName;
+        }
+    }
+
+    // פונקציה פנימית שמריצה פקודת getprop
+    private static String getProp(String adbPath, String deviceID, String propName) throws IOException {
+        ProcessBuilder builder = new ProcessBuilder(adbPath, "-s", deviceID, "shell", "getprop", propName);
+        Process process = builder.start();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+            String line = reader.readLine();
+            return (line != null) ? line.trim() : null;
+        }
+    }
+
+
     public static String getAdbPath() {
         if (System.getProperty("os.name").toLowerCase().contains("win")) {
             return System.getProperty("user.home") + "\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe";

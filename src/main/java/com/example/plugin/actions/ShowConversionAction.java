@@ -1,6 +1,6 @@
 package com.example.plugin.actions;
 
-import com.example.plugin.LogcatProcessHandler;
+import com.example.plugin.UI.LogToolWindowFactory;
 import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -21,5 +21,6 @@ public class ShowConversionAction extends AnAction {
     public void actionPerformed(@NotNull AnActionEvent e) {
         // הקריאה לפונקציה שסיננת קודם:
         showLogs.filterLogs("conversion");
+        LogToolWindowFactory.updateLogContentPanel(); // Add this line to refresh the UI
     }
 }
