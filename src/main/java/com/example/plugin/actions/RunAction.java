@@ -13,7 +13,7 @@ public class RunAction extends AnAction {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/runIcon2.svg", MyClass.class);
     }
     public RunAction() {
-        super("RUN", "Run action", MyClass.MY_ICON);        // טקסט הכפתור
+        super("RUN", "Run action", MyClass.MY_ICON);
     }
 
     @Override

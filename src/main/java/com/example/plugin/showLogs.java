@@ -12,30 +12,26 @@ public class showLogs {
     // Track current filter
     private static String currentFilter = null;
 
-    /**
-     * Get the complete list of logs
-     */
+    //Get the complete list of logs
+
     public static List<String> getAllLogs() {
         return allLogs;
     }
 
-    /**
-     * Get the current active filter
-     */
+    //Get the current active filter
+
     public static String getCurrentFilter() {
         return currentFilter;
     }
 
-    /**
-     * Check if a log entry matches the current filter
-     */
+    //Check if a log entry matches the current filter
     public static boolean logMatchesFilter(String log, String filter) {
         return filter == null || log.contains("/ " + filter);
     }
 
-    /**
-     * Add or update a log entry and refresh the display
-     */
+    //Add or update a log entry and refresh the display
+
+
     public static void showUpdateLogs(String formattedLogText, String type) {
         if (formattedLogText.contains(type) && !allLogs.contains(formattedLogText)) {
             // Remove all previous EVENT logs
@@ -56,18 +52,16 @@ public class showLogs {
 
     }
 
-    /**
-     * Set the current filter and refresh the display
-     */
+    //Set the current filter and refresh the display
+
     public static void filterLogs(String filterType) {
         // Update the filter and refresh the UI
         currentFilter = filterType;
         refreshLogDisplay();
     }
 
-    /**
-     * Helper method to refresh the log display on the UI thread
-     */
+    //Helper method to refresh the log display on the UI thread
+
     private static void refreshLogDisplay() {
         SwingUtilities.invokeLater(LogToolWindowFactory::updateLogContentPanel);
     }

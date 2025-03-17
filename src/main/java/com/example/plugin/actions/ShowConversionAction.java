@@ -13,12 +13,11 @@ public class ShowConversionAction extends AnAction {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/conversionIcon.svg", RunAction.MyClass.class);
     }
     public ShowConversionAction() {
-        super("CONVERSION", "Show conversion logs", MyClass.MY_ICON); // טקסט הכפתור
+        super("CONVERSION", "Show conversion logs", MyClass.MY_ICON);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        // הקריאה לפונקציה שסיננת קודם:
         showLogs.filterLogs("CONVERSION");
     }
 }

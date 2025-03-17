@@ -33,7 +33,11 @@ import org.jetbrains.annotations.NotNull;
                 if (selectedDeviceId == null) {
                     SwingUtilities.invokeLater(() -> DeviceSelector.showDeviceSelector(devices, adbPath));
                 } else {
-                    SwingUtilities.invokeLater(() -> startLoggingForDevice(selectedDeviceId, adbPath));
+                    SwingUtilities.invokeLater(() -> {
+                        startLoggingForDevice(selectedDeviceId, adbPath);
+                        // Automatically show all logs after device selection
+                        showLogs.filterLogs(null);
+                    });
                 }
 
             } catch (Exception e) {
@@ -71,7 +75,6 @@ import org.jetbrains.annotations.NotNull;
                  if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
                 }
-                // Handle EVENT logs - new addition
                  else if (text.contains("preparing data:")) {
                      processEventLog("EVENT", text, date);
                  }
@@ -95,7 +98,7 @@ import org.jetbrains.annotations.NotNull;
         }
     }
 
-    // New method to process event logs
+    //Method to process event logs
     private static void processEventLog(String type, String text, String date) {
         String eventInfo = LogUtils.extractMessageFromJson(type, text);
 

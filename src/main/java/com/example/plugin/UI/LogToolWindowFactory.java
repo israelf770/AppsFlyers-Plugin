@@ -60,9 +60,8 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         mainPanel.add(scrollPane, BorderLayout.CENTER);
     }
 
-    /**
-     * Updates the log panel with logs that match the current filter
-     */
+    //Updates the log panel with logs that match the current filter
+
     public static void updateLogContentPanel() {
         if (logPanel != null) {
             logPanel.removeAll();

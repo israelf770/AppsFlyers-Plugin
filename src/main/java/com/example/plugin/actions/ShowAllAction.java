@@ -15,12 +15,11 @@ public class ShowAllAction extends AnAction {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/allIcon.svg", MyClass.class);
     }
     public ShowAllAction() {
-        super("All", "Show all logs", MyClass.MY_ICON);        // טקסט הכפתור
+        super("All", "Show all logs", MyClass.MY_ICON);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        // הקריאה לפונקציה שסיננת קודם:
         showLogs.filterLogs(null);
     }
 }
