@@ -1,5 +1,6 @@
 package com.example.plugin.UI;
 
+import com.example.plugin.LogcatNavigator;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.IconLoader;
@@ -7,6 +8,7 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.JBUI;
+import kotlinx.html.S;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class enterLogPanelUI {
 
@@ -110,6 +114,12 @@ public class enterLogPanelUI {
                 }
             }
         });
+        // Extract timestamp from log for logcat navigation
+        String timestamp = extractTimestamp(log);
+
+        // Panel for action buttons
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        actionPanel.setOpaque(false);
 
 
         logLabel.addMouseListener(new MouseAdapter() {
@@ -118,6 +128,16 @@ public class enterLogPanelUI {
 
             @Override
             public void mouseEntered(MouseEvent e) {
+                // Show in Logcat button
+                JLabel showInLogcatButton = createActionButton("/icons/logcatIcon.svg", "Show in Logcat");
+                showInLogcatButton.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        showInLogcat(timestamp);
+                        showTemporaryFeedback(showInLogcatButton);
+                    }
+                });
+
                 Icon copyIcon = IconLoader.getIcon("AllIcons.Actions.Copy", getClass());
                 JLabel iconLabel = new JLabel(copyIcon);
                 JPanel balloonContent = new RoundedPanel(15, new JBColor(Gray._60, Gray._60));
@@ -166,6 +186,7 @@ public class enterLogPanelUI {
                 }
             }
         });
+        buttonPanel.add(showInLogcatButton);
 
         return entryPanel;
     }
@@ -229,6 +250,19 @@ public class enterLogPanelUI {
         clipboard.setContents(selection, selection);
     }
 
+    private static String extractTimestamp(String log) {
+        // Extract timestamp from the beginning of the log
+        // Format is typically at the beginning, up to 14 characters
+        if (log != null && log.length() > 18) {
+            return log.substring(0, 18).trim();
+        }
+        return null;
+    }
+
+    private static void showInLogcat(String timestamp) {
+        // Call the method in new LogcatNavigator class
+        LogcatNavigator.navigateToLogcatEntry(timestamp);
+    }
     // פונקציה להצגת פידבק ויזואלי קצר (לדוגמה, שינוי רקע זמני)
     private static void showTemporaryFeedback(JComponent component) {
         Color original = component.getBackground();
@@ -240,7 +274,7 @@ public class enterLogPanelUI {
         }).start();
     }
 
-    // מחלקה לפאנל מעוגל (RoundedPanel) כפי שהוגדר בעבר
+    // מחלקה פנימית לציור פאנל מעוגל
     public static class RoundedPanel extends JPanel {
         private final int cornerRadius;
         private final Color backgroundColor;

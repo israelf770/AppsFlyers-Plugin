@@ -7,13 +7,17 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import org.jetbrains.annotations.NotNull;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 
 public class LogcatProcessHandler {
     private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
     private static String selectedDeviceId = null;
     private static OSProcessHandler currentProcessHandler = null;
+    // Map to store raw logcat entries by timestamp
+    private static final Map<String, String> rawLogcatEntries = new HashMap<>();
 
     public static void setSelectedDeviceId(String deviceId) {
         selectedDeviceId = deviceId;
@@ -21,6 +25,10 @@ public class LogcatProcessHandler {
 
     public static void resetSelectedDevice() {
         selectedDeviceId = null;
+    }
+
+    public static String getRawLogcatEntry(String timestamp) {
+        return rawLogcatEntries.get(timestamp);
     }
 
     public static void startLogcat() {
@@ -71,6 +79,9 @@ public class LogcatProcessHandler {
 
                 String date = text.substring(0, 18);
 
+                // Store the raw logcat entry for later lookup
+                rawLogcatEntries.put(date, text);
+
                 if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
@@ -112,5 +123,10 @@ public class LogcatProcessHandler {
                 showLogs.showUpdateLogs(logEntry, type, text);
             });
         }
+    }
+
+    // Method to retrieve stored raw logs by timestamp
+    public static Map<String, String> getRawLogcatEntries() {
+        return rawLogcatEntries;
     }
 }
