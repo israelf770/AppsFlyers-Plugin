@@ -7,9 +7,6 @@ import com.example.plugin.showLogs;
 import javax.swing.Icon;
 import com.intellij.openapi.util.IconLoader;
 
-
-
-
 public class ShowAllAction extends AnAction {
     public static class MyClass {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/allIcon.svg", MyClass.class);

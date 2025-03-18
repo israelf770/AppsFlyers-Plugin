@@ -9,13 +9,17 @@ public class LogUtils {
     // method to extract needed info from logs
     public static String extractMessageFromJson(String type, String logText) {
         try {
+            // Special handling for "No deep link detected" message
+            if (type.equals("DEEPLINK") && logText.contains("No deep link")) {
+                return logText;
+            }
+
             int jsonStartIndex = logText.indexOf("{");
             int jsonEndIndex = logText.length()-1;
 
             // Check if indices are valid
             if (jsonStartIndex == -1 || jsonEndIndex == -1 || jsonEndIndex < jsonStartIndex) {
                 System.err.println("Error: JSON not found in log text.");
-                System.out.println(logText);
                 return null;
             }
 
@@ -36,7 +40,6 @@ public class LogUtils {
                 String eventData = jsonObject.has("eventValue") ?  jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
                 return "\n{"+ "\n" +" \"eventName\":"+'\"'+eventName+'\"' +"," + "\n" + " \"eventValue\":"+'\"'+eventData +'\"'+ "\n" + "}";
             } else if (type.equals("DEEPLINK")) {
-                System.out.println("DDL JSON pars");
                 return jsonPart;
             }
             return null;

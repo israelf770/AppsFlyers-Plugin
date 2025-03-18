@@ -74,6 +74,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         AnAction showEventAction = new ShowEventAction();
         AnAction showLaunchAction = new ShowLaunchAction();
         AnAction RunAction = new RunAction();
+        AnAction ShowDeepLinkAction = new ShowDeepLinkAction();
 
         toolWindow.setTitleActions(Arrays.asList(
                 RunAction,
@@ -84,7 +85,9 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                 new Separator(),
                 showEventAction,
                 new Separator(),
-                showLaunchAction
+                showLaunchAction,
+                new Separator(),
+                ShowDeepLinkAction
         ));
 
         // Log panel
@@ -170,7 +173,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         if (matcher.find()) {
             // הקבוצה הראשונה מכילה את הטקסט שבתוך הסוגריים
             insideParentheses = matcher.group(1);
-            System.out.println("Inside parentheses: " + insideParentheses);
         }
         return insideParentheses;
     }

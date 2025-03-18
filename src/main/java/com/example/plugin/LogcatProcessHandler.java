@@ -26,7 +26,6 @@ public class LogcatProcessHandler {
 
     public static void startLogcat() {
         try {
-            System.out.println(selectedDeviceId);
             String adbPath = GetInfo.getAdbPath();
             List<String> devices = GetInfo.getConnectedDevices(adbPath);
             if (devices.isEmpty()) {
@@ -79,9 +78,8 @@ public class LogcatProcessHandler {
                     processLog("LAUNCH", text, date);
                 } else if (text.contains("preparing data:")) {
                     processEventLog("EVENT", text, date);
-                } else if (text.contains("onDeepLinking")) {
-                    processLog("DEEPLINK", text, date);
-                    System.out.println(text);
+                } else if (text.contains("deepLink")||text.contains("No deep link detected")) {
+                    processEventLog("DEEPLINK", text, date);
                 }
             }
         });
@@ -103,6 +101,8 @@ public class LogcatProcessHandler {
                     showLogs.showUpdateLogs(date + " / " + type + " " + formattedLog,
                             type + " " + formattedLog)
             );
+        }else {
+            System.out.println("Formatted log is null, not showing anything");
         }
     }
 

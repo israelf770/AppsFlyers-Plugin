@@ -28,7 +28,6 @@ public class showLogs {
     public static boolean logMatchesFilter(String log, String filter) {
         return filter == null || log.contains("/ " + filter);
     }
-
     //Add or update a log entry and refresh the display
 
 
@@ -38,7 +37,6 @@ public class showLogs {
             allLogs.removeIf(log -> log.contains(type));
             // Add the new event
             allLogs.add(formattedLogText);
-            System.out.println(formattedLogText);
         }
             // Schedule the UI update after a short delay
             new Thread(() -> {
