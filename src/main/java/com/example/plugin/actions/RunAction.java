@@ -12,7 +12,7 @@ import static com.example.plugin.UI.LogToolWindowFactory.deviceCombo;
 
 public class RunAction extends AnAction {
     public static class MyClass {
-        public static final Icon MY_ICON = IconLoader.getIcon("/icons/runIcon2.svg", MyClass.class);
+        public static final Icon MY_ICON = IconLoader.getIcon("AllIcons.Actions.Execute", MyClass.class);
     }
     public RunAction() {
         super("RUN", "Run action", MyClass.MY_ICON);

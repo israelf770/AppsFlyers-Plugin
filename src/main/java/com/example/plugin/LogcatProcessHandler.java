@@ -13,8 +13,8 @@ import javax.swing.SwingUtilities;
 public class LogcatProcessHandler {
     private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
     private static String selectedDeviceId = null;
-    // משתנה לאחסון תהליך הלוג הנוכחי
     private static OSProcessHandler currentProcessHandler = null;
+    private static String lastLogTimestamp = null;
 
     public static void setSelectedDeviceId(String deviceId) {
         selectedDeviceId = deviceId;
@@ -22,11 +22,12 @@ public class LogcatProcessHandler {
 
     public static void resetSelectedDevice() {
         selectedDeviceId = null;
+        lastLogTimestamp = null;
     }
 
     public static void startLogcat() {
         try {
-            System.out.println(selectedDeviceId);
+            System.out.println("Selected device: " + selectedDeviceId);
             String adbPath = GetInfo.getAdbPath();
             List<String> devices = GetInfo.getConnectedDevices(adbPath);
             if (devices.isEmpty()) {
@@ -34,8 +35,10 @@ public class LogcatProcessHandler {
             }
 
             SwingUtilities.invokeLater(() -> {
+                // נקה את הלוגים הישנים מהממשק לפני שמתחילים
+                showLogs.clearAllLogs();
+                // נתחיל את הלוגקאט
                 startLoggingForDevice(selectedDeviceId, adbPath);
-                // Automatically show all logs after device selection
                 showLogs.filterLogs(null);
             });
         } catch (Exception e) {
@@ -45,19 +48,44 @@ public class LogcatProcessHandler {
 
     private static void startLoggingForDevice(String deviceId, String adbPath) {
         try {
-            // סגירת התהליך הקודם אם קיים ופעיל
+            // סגור את התהליך הקודם אם הוא קיים
             if (currentProcessHandler != null && !currentProcessHandler.isProcessTerminated()) {
                 currentProcessHandler.destroyProcess();
             }
 
-            ProcessBuilder builder = new ProcessBuilder(adbPath, "-s", deviceId, "logcat");
+            ProcessBuilder builder;
+
+            if (lastLogTimestamp != null) {
+                // קריאה מהזמן האחרון שנרשם
+                builder = new ProcessBuilder(adbPath, "-s", deviceId, "logcat", "-T", lastLogTimestamp);
+                System.out.println("Starting logcat from timestamp: " + lastLogTimestamp);
+            } else {
+                // נקה את הבאפר של לוגקאט במכשיר כשזו הפעם הראשונה
+                clearLogcatBuffer(deviceId, adbPath);
+
+                // קרא את כל הלוגים (בפעם הראשונה בלבד)
+                builder = new ProcessBuilder(adbPath, "-s", deviceId, "logcat");
+                System.out.println("Starting logcat (first run)");
+            }
+
             Process process = builder.start();
             OSProcessHandler processHandler = getOsProcessHandler(process);
-            // עדכון המשתנה עם התהליך החדש
             currentProcessHandler = processHandler;
             processHandler.startNotify();
+
         } catch (Exception e) {
             logger.error("Error starting logcat for device: " + deviceId, e);
+        }
+    }
+
+    private static void clearLogcatBuffer(String deviceId, String adbPath) {
+        try {
+            ProcessBuilder clearBuilder = new ProcessBuilder(adbPath, "-s", deviceId, "logcat", "-c");
+            Process clearProcess = clearBuilder.start();
+            clearProcess.waitFor(); // נחכה עד שהפקודה תסתיים
+            System.out.println("Logcat buffer cleared for device: " + deviceId);
+        } catch (Exception e) {
+            logger.error("Error clearing logcat buffer for device: " + deviceId, e);
         }
     }
 
@@ -71,7 +99,12 @@ public class LogcatProcessHandler {
 
                 if (text.length() <= 14) return;
 
-                String date = text.substring(0, 14);
+                String date = text.substring(0, 18);
+
+                // עדכן את חותמת הזמן האחרונה
+                if (date.matches("\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2}.\\d{3}")) {
+                    lastLogTimestamp = date;
+                }
 
                 if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
@@ -94,26 +127,25 @@ public class LogcatProcessHandler {
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
+            String shortLog = date + " / " + type + ": " + text.substring(resIndex);
             SwingUtilities.invokeLater(() ->
-                    showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex),
-                            type + ": result")
+                showLogs.showUpdateLogs(shortLog,type + ": result", text)
             );
         } else if (formattedLog != null) {
+            String shortLog = date + " / " + type + " " + formattedLog;
             SwingUtilities.invokeLater(() ->
-                    showLogs.showUpdateLogs(date + " / " + type + " " + formattedLog,
-                            type + " " + formattedLog)
+                    showLogs.showUpdateLogs(shortLog, type + " " + formattedLog, text)
             );
         }
     }
 
-    // Method to process event logs
     private static void processEventLog(String type, String text, String date) {
         String eventInfo = LogUtils.extractMessageFromJson(type, text);
 
         if (eventInfo != null) {
             SwingUtilities.invokeLater(() -> {
                 String logEntry = date + " / " + type + ":\n" + eventInfo;
-                SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(logEntry, type));
+                showLogs.showUpdateLogs(logEntry, type, text);
             });
         }
     }
