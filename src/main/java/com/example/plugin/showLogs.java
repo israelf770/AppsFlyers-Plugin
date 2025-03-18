@@ -1,13 +1,7 @@
 package com.example.plugin;
 import com.example.plugin.UI.LogEntry;
 import com.example.plugin.UI.LogToolWindowFactory;
-
 import javax.swing.*;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +32,7 @@ public class showLogs {
     public static void showUpdateLogs(String shortLog, String type, String fullLog) {
         if (shortLog.contains(type) && !allLogs.contains(shortLog)) {
             // Remove all previous EVENT logs
-            allLogs.removeIf(entry -> entry.getshortLog.contains(type);
+            allLogs.removeIf(entry -> entry.getShortLog().contains(type));
             // Add the new event
             allLogs.add(new LogEntry(shortLog, fullLog));
         }
