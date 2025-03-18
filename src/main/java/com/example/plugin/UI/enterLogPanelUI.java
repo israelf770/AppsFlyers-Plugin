@@ -1,5 +1,6 @@
 package com.example.plugin.UI;
 
+import com.example.plugin.LogcatNavigator;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.IconLoader;
@@ -7,7 +8,6 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.JBUI;
-import kotlinx.html.S;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -17,8 +17,6 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class enterLogPanelUI {
 
@@ -33,74 +31,78 @@ public class enterLogPanelUI {
         logLabel.setForeground(JBColor.foreground());
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
 
+        // Extract timestamp from log for logcat navigation
+        String timestamp = extractTimestamp(log);
 
-        // Attach a mouse listener to show a balloon on hover and copy on click.
-        logLabel.addMouseListener(new MouseAdapter() {
-            private Balloon balloon;
-            private JComponent balloonContentRef; // to store a reference to the content
+        // Panel for action buttons
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        actionPanel.setOpaque(false);
+
+        // Copy button
+        JLabel copyButton = createActionButton("/icons/copyIcon.svg", "Copy to clipboard");
+        copyButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                copyToClipboard(log);
+                showTemporaryFeedback(copyButton);
+            }
+        });
+
+        // Show in Logcat button
+        JLabel showInLogcatButton = createActionButton("/icons/logcatIcon.svg", "Show in Logcat");
+        showInLogcatButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showInLogcat(timestamp);
+                showTemporaryFeedback(showInLogcatButton);
+            }
+        });
+
+        actionPanel.add(copyButton);
+        actionPanel.add(showInLogcatButton);
+        actionPanel.setVisible(false); // Initially hidden
 
 
+        entryPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                Icon copyIcon = IconLoader.getIcon("/icons/copyIcon.svg", getClass());
-
-                // Create a label with only the icon:
-                JLabel iconLabel = new JLabel(copyIcon);
-                // Create a simple label as balloon content.
-                JPanel balloonContent = new RoundedPanel(15, new JBColor(Gray._60, Gray._60));
-
-                balloonContent.add(iconLabel); // או כל רכיב אחר שתרצה להציג
-                balloonContentRef = balloonContent;
-
-
-                balloon = JBPopupFactory.getInstance()
-                        .createBalloonBuilder(balloonContent)
-                        .setShowCallout(false)
-                        .setAnimationCycle(200)
-                        .setFillColor(new JBColor(new Color(0, 0, 0, 0), new Color(0,0,0,0)))
-                        .setBorderColor(new JBColor(new Color(60, 60, 0, 0), new Color(60,60,0,0)))
-                        .setBorderInsets(JBUI.emptyInsets())
-                        .createBalloon();
-
-
-                int x = logLabel.getWidth() - logLabel.getWidth() + 15;      // horizontal center of the label
-                int y = logLabel.getHeight() / 2;         // just below the bottom edge of the label
-                RelativePoint rp = new RelativePoint(logLabel, new Point(x, y));
-
-                // Then show the balloon below that point:
-                balloon.show(rp, Balloon.Position.below);
-
-
+                actionPanel.setVisible(true);
+                entryPanel.repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                    if (balloon != null && !balloon.isDisposed()) {
-                        balloon.hide();
-                    }
-            }
-
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                // When clicked, perform a visual effect on balloonContentRef then copy the text.
-                if (balloonContentRef != null) {
-                    Color original = balloonContentRef.getBackground();
-                    // Set temporary background color to indicate the action.
-                    balloonContentRef.setBackground(new JBColor(Gray._100, Gray._100));
-                    balloonContentRef.repaint();
-                    new Timer(150, evt -> {
-                        balloonContentRef.setBackground(original);
-                        balloonContentRef.repaint();
-                    }).start();
+                // Check if cursor is still within the panel or its children
+                Component c = SwingUtilities.getDeepestComponentAt(entryPanel, e.getX(), e.getY());
+                if (c == null) {
+                    actionPanel.setVisible(false);
+                    entryPanel.repaint();
                 }
-                copyToClipboard(log);
             }
         });
 
         entryPanel.add(logLabel, BorderLayout.CENTER);
+        entryPanel.add(actionPanel, BorderLayout.EAST);
 
         return entryPanel;
+    }
+
+    private static JLabel createActionButton(String iconPath, String tooltipText) {
+        Icon icon = IconLoader.getIcon(iconPath, enterLogPanelUI.class);
+        JLabel button = new JLabel(icon);
+        button.setToolTipText(tooltipText);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
+    private static void showTemporaryFeedback(JComponent component) {
+        Color original = component.getBackground();
+        component.setBackground(new JBColor(Gray._100, Gray._100));
+        component.repaint();
+        new Timer(150, evt -> {
+            component.setBackground(original);
+            component.repaint();
+        }).start();
     }
 
    private static void copyToClipboard(String text) {
@@ -116,6 +118,19 @@ public class enterLogPanelUI {
        clipboard.setContents(selection, selection);
    }
 
+    private static String extractTimestamp(String log) {
+        // Extract timestamp from the beginning of the log
+        // Format is typically at the beginning, up to 14 characters
+        if (log != null && log.length() > 18) {
+            return log.substring(0, 18).trim();
+        }
+        return null;
+    }
+
+    private static void showInLogcat(String timestamp) {
+        // Call the method in new LogcatNavigator class
+        LogcatNavigator.navigateToLogcatEntry(timestamp);
+    }
 
     // מחלקה פנימית לציור פאנל מעוגל
     public static class RoundedPanel extends JPanel {

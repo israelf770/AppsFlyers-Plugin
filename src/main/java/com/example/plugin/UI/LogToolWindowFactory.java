@@ -27,11 +27,15 @@ public class LogToolWindowFactory implements ToolWindowFactory {
     // Reference to the log panel for updates
     private static JPanel logPanel;
     public static JComboBox<String> deviceCombo;
+    private static Project currentProject;
 
 
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
+        // Store reference to current project for later use
+        currentProject = project;
+
         // נבנה פאנל ראשי שמכיל את כל התוכן
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Gray._30);
@@ -102,6 +106,10 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
         loadDevices();
 
+    }
+
+    public static Project getCurrentProject() {
+        return currentProject;
     }
 
     public static void loadDevices() {
