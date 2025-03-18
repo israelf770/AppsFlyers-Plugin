@@ -69,9 +69,9 @@ public class LogcatProcessHandler {
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 String text = event.getText();
 
-                if (text.length() <= 14) return;
+                if (text.length() <= 18) return;
 
-                String date = text.substring(0, 14);
+                String date = text.substring(0, 18);
 
                 if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
