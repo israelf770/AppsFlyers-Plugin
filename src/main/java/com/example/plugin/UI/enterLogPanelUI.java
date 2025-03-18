@@ -1,5 +1,6 @@
 package com.example.plugin.UI;
 
+import com.example.plugin.LogcatNavigator;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.util.IconLoader;
@@ -93,9 +94,28 @@ public class enterLogPanelUI {
         // הוספת הפאנל העטיפה לפאנל הראשי
         entryPanel.add(wrapper, BorderLayout.CENTER);
 
+        // Extract timestamp from log for logcat navigation
+        String timestamp = extractTimestamp(log);
+
+        // Panel for action buttons
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        actionPanel.setOpaque(false);
+
+        // Show in Logcat button
+        JLabel showInLogcatButton = createActionButton("/icons/logcatIcon.svg", "Show in Logcat");
+        showInLogcatButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showInLogcat(timestamp);
+                showTemporaryFeedback(showInLogcatButton);
+            }
+        });
+
+        actionPanel.add(showInLogcatButton);
+        actionPanel.setVisible(false); // Initially hidden
+
         // הוספת מאזין ללחיצה על הפאנל (למעט על הכפתור) לצורך העתקה
         entryPanel.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (!buttonPanel.getBounds().contains(e.getPoint())) {
@@ -137,12 +157,20 @@ public class enterLogPanelUI {
                 int y = logLabel.getHeight() / 2;
                 RelativePoint rp = new RelativePoint(logLabel, new Point(x, y));
                 balloon.show(rp, Balloon.Position.below);
+
+                actionPanel.setVisible(true);
+                entryPanel.repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 if (balloon != null && !balloon.isDisposed()) {
                     balloon.hide();
+                }
+                Component c = SwingUtilities.getDeepestComponentAt(entryPanel, e.getX(), e.getY());
+                if (c == null) {
+                    actionPanel.setVisible(false);
+                    entryPanel.repaint();
                 }
             }
 
@@ -167,8 +195,34 @@ public class enterLogPanelUI {
             }
         });
 
+        entryPanel.add(logLabel, BorderLayout.CENTER);
+        entryPanel.add(actionPanel, BorderLayout.EAST);
+
         return entryPanel;
     }
+
+    private static JLabel createActionButton(String iconPath, String tooltipText) {
+        Icon icon = IconLoader.getIcon(iconPath, enterLogPanelUI.class);
+        JLabel button = new JLabel(icon);
+        button.setToolTipText(tooltipText);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
+    private static String extractTimestamp(String log) {
+        // Extract timestamp from the beginning of the log
+        // Format is typically at the beginning, up to 14 characters
+        if (log != null && log.length() > 18) {
+            return log.substring(0, 18).trim();
+        }
+        return null;
+    }
+
+    private static void showInLogcat(String timestamp) {
+        // Call the method in new LogcatNavigator class
+        LogcatNavigator.navigateToLogcatEntry(timestamp);
+    }
+
 
     // מחלקה לכפתור מעוגל המבוססת על RoundedPanel
     public static class RoundedButton extends RoundedPanel {
