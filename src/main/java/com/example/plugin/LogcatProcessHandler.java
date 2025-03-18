@@ -13,7 +13,6 @@ import javax.swing.SwingUtilities;
 public class LogcatProcessHandler {
     private static final Logger logger = Logger.getInstance(LogcatProcessHandler.class);
     private static String selectedDeviceId = null;
-    // משתנה לאחסון תהליך הלוג הנוכחי
     private static OSProcessHandler currentProcessHandler = null;
 
     public static void setSelectedDeviceId(String deviceId) {
@@ -52,9 +51,9 @@ public class LogcatProcessHandler {
             ProcessBuilder builder = new ProcessBuilder(adbPath, "-s", deviceId, "logcat");
             Process process = builder.start();
             OSProcessHandler processHandler = getOsProcessHandler(process);
-            // עדכון המשתנה עם התהליך החדש
             currentProcessHandler = processHandler;
             processHandler.startNotify();
+
         } catch (Exception e) {
             logger.error("Error starting logcat for device: " + deviceId, e);
         }
@@ -92,28 +91,25 @@ public class LogcatProcessHandler {
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
+            String shortLog = date + " / " + type + ": " + text.substring(resIndex);
             SwingUtilities.invokeLater(() ->
-                    showLogs.showUpdateLogs(date + " / " + type + ": " + text.substring(resIndex),
-                            type + ": result")
+                showLogs.showUpdateLogs(shortLog,type + ": result", text)
             );
         } else if (formattedLog != null) {
+            String shortLog = date + " / " + type + " " + formattedLog;
             SwingUtilities.invokeLater(() ->
-                    showLogs.showUpdateLogs(date + " / " + type + " " + formattedLog,
-                            type + " " + formattedLog)
+                    showLogs.showUpdateLogs(shortLog, type + " " + formattedLog, text)
             );
-        }else {
-            System.out.println("Formatted log is null, not showing anything");
         }
     }
 
-    // Method to process event logs
     private static void processEventLog(String type, String text, String date) {
         String eventInfo = LogUtils.extractMessageFromJson(type, text);
 
         if (eventInfo != null) {
             SwingUtilities.invokeLater(() -> {
                 String logEntry = date + " / " + type + ":\n" + eventInfo;
-                SwingUtilities.invokeLater(() -> showLogs.showUpdateLogs(logEntry, type));
+                showLogs.showUpdateLogs(logEntry, type, text);
             });
         }
     }

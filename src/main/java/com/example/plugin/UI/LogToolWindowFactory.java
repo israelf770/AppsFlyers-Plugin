@@ -7,9 +7,11 @@ import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.Gray;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
@@ -43,7 +45,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
 
         // צור ComboBox (או כל רכיב אחר שתרצה)
-        deviceCombo = new JComboBox<>();
+        deviceCombo = new ComboBox<>();
         deviceCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, deviceCombo.getPreferredSize().height));
         deviceCombo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -95,7 +97,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logPanel.setBackground(Gray._30);
 
-        JScrollPane scrollPane = new JScrollPane(logPanel);
+        JScrollPane scrollPane = new JBScrollPane(logPanel);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
         scrollPane.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         mainPanel.add(scrollPane, BorderLayout.CENTER);
@@ -104,7 +106,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         toolWindow.getContentManager().addContent(content);
 
         loadDevices();
-
     }
 
     public static void loadDevices() {
@@ -148,9 +149,9 @@ public class LogToolWindowFactory implements ToolWindowFactory {
             String currentFilter = showLogs.getCurrentFilter();
 
             // Iterate through all logs and add only those that match the current filter
-            for (String log : showLogs.getAllLogs()) {
-                if (showLogs.logMatchesFilter(log, currentFilter)) {
-                    JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(log);
+            for (LogEntry entry : showLogs.getAllLogs()) {
+                if (showLogs.logMatchesFilter(entry.getShortLog(), currentFilter)) {
+                    JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(entry.getShortLog(), entry.getFullLog());
                     logPanel.add(entryPanel);
                     logPanel.add(Box.createVerticalStrut(10)); // Space between entries
                 }
