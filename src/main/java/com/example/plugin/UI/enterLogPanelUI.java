@@ -8,10 +8,7 @@ import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.JBUI;
-import kotlinx.html.S;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,52 +19,36 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class enterLogPanelUI {
 
-    private static final Logger log = LoggerFactory.getLogger(enterLogPanelUI.class);
-
-    // פונקציה ליצירת פאנל לוג עם כפתור טוגל מובנה
     public static @NotNull JPanel createLogEntryPanel(String log, String fullLog) {
-        // פאנל עגול ראשי
+        // Main rounded panel
         RoundedPanel entryPanel = new RoundedPanel(12, Gray._60);
         entryPanel.setLayout(new BorderLayout());
         entryPanel.setBorder(JBUI.Borders.empty(8, 10));
 
-        // עטיפת הטקסט ב-HTML לעיטוף עקבי
+        // Prepare short/full HTML
         String htmlLogShort = "<html><div style='width:300px; white-space:normal; word-wrap:break-word;'>"
                 + log + "</div></html>";
         String htmlLogFull = "<html><div style='width:300px; white-space:normal; word-wrap:break-word;'>"
                 + fullLog + "</div></html>";
 
-        // יצירת JLabel להצגת הטקסט – ברירת המחדל היא הטקסט הקצר
+        // Label with default short text
         JLabel logLabel = new JLabel(htmlLogShort);
-        if (log.contains("FAILURE")) {
-            logLabel.setForeground(JBColor.RED);
-        } else if (log.contains("SUCCESS")) {
-            logLabel.setForeground(new JBColor(new Color(0, 128, 0), new Color(0, 200, 0)));
-        } else {
-            logLabel.setForeground(JBColor.foreground());
-        }
+        logLabel.setForeground(JBColor.foreground()); // Or apply color logic if needed
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
-        logLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        logLabel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
 
-        // דגל לשמירת מצב התצוגה (קצר/מלא)
-        final boolean[] isShowingLog = { true };
+        final boolean[] isShowingLog = {true};
 
-        // יצירת כפתור טוגל (מעוגל) – הוא יהיה תמיד מוצג מצד שמאל
+        // 1) Create the toggle button
         Icon toggleIcon = IconLoader.getIcon("AllIcons.Actions.SwapPanels", enterLogPanelUI.class);
         RoundedButton toggleButton = new RoundedButton(
                 toggleIcon, 15,
-                new JBColor(new Color(60, 60, 0, 0), new Color(60,60,0,0)),
-                new Dimension(40,30)
+                new JBColor(new Color(60, 60, 0, 0), new Color(60, 60, 0, 0)),
+                new Dimension(30, 30)
         );
-        // קביעת מידות קבועות לכפתור
-        toggleButton.setPreferredSize(new Dimension(30,30));
-        toggleButton.setMinimumSize(new Dimension(30,30));
-        toggleButton.setMaximumSize(new Dimension(30,30));
         toggleButton.setActionListener(e -> {
             if (isShowingLog[0]) {
                 logLabel.setText(htmlLogFull);
@@ -77,32 +58,42 @@ public class enterLogPanelUI {
             isShowingLog[0] = !isShowingLog[0];
         });
 
-        // יצירת פאנל עטיפה עבור הכפתור טוגל
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
-        buttonPanel.setOpaque(false);
-        buttonPanel.setPreferredSize(new Dimension(40, 30)); // רוחב קבוע
-
-        // center the button
-        buttonPanel.add(Box.createVerticalGlue());
-        buttonPanel.add(toggleButton);
-        buttonPanel.add(Box.createVerticalGlue());
-
-        // יצירת פאנל עטיפה עם BorderLayout – באזור WEST הכפתור ובאזור CENTER הלייבל
-        JPanel wrapper = new JPanel(new BorderLayout());
-        wrapper.setOpaque(false);
-        wrapper.add(buttonPanel, BorderLayout.WEST);
-        wrapper.add(logLabel, BorderLayout.CENTER);
-
-        // הוספת הפאנל העטיפה לפאנל הראשי
-        entryPanel.add(wrapper, BorderLayout.CENTER);
-
-        // הוספת מאזין ללחיצה על הפאנל (למעט על הכפתור) לצורך העתקה
-        entryPanel.addMouseListener(new MouseAdapter() {
-
+        // 2) Create the “Show in Logcat” button
+        JLabel showInLogcatButton = createActionButton(); // the method returning a JLabel with logcatIcon
+        String timestamp = extractTimestamp(log);         // get timestamp for showInLogcat
+        showInLogcatButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (!buttonPanel.getBounds().contains(e.getPoint())) {
+                showInLogcat(timestamp);
+            }
+        });
+
+        // 3) Put BOTH buttons in a single panel with horizontal layout
+        JPanel leftButtonsPanel = new JPanel();
+        leftButtonsPanel.setLayout(new BoxLayout(leftButtonsPanel, BoxLayout.X_AXIS));
+        leftButtonsPanel.setOpaque(false);
+
+        // Add the toggle button, some spacing, then the logcat button
+        leftButtonsPanel.add(toggleButton);
+        leftButtonsPanel.add(Box.createHorizontalStrut(5));
+        leftButtonsPanel.add(showInLogcatButton);
+
+        // 4) Create a wrapper panel to hold (leftButtonsPanel) on the WEST, and (logLabel) in CENTER
+        JPanel wrapper = new JPanel(new BorderLayout());
+        wrapper.setOpaque(false);
+        wrapper.add(leftButtonsPanel, BorderLayout.WEST);
+        wrapper.add(logLabel, BorderLayout.CENTER);
+
+        // Add the wrapper to entryPanel
+        entryPanel.add(wrapper, BorderLayout.CENTER);
+
+        // 5) MouseListener on the entryPanel for copying text if clicked outside the buttons
+        logLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Convert the click point to the leftButtonsPanel coordinate space
+                Point pt = SwingUtilities.convertPoint(entryPanel, e.getPoint(), leftButtonsPanel);
+                if (!leftButtonsPanel.contains(pt)) {
                     if (isShowingLog[0]) {
                         copyToClipboard(log);
                     } else {
@@ -110,50 +101,32 @@ public class enterLogPanelUI {
                         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                         clipboard.setContents(selection, null);
                     }
-                    showTemporaryFeedback(entryPanel);
                 }
             }
         });
-        // Extract timestamp from log for logcat navigation
-        String timestamp = extractTimestamp(log);
-
-        // Panel for action buttons
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
-        actionPanel.setOpaque(false);
 
 
         logLabel.addMouseListener(new MouseAdapter() {
             private Balloon balloon;
-            private JComponent balloonContentRef;
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                // Show in Logcat button
-                JLabel showInLogcatButton = createActionButton("/icons/logcatIcon.svg", "Show in Logcat");
-                showInLogcatButton.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent e) {
-                        showInLogcat(timestamp);
-                        showTemporaryFeedback(showInLogcatButton);
-                    }
-                });
-
                 Icon copyIcon = IconLoader.getIcon("AllIcons.Actions.Copy", getClass());
                 JLabel iconLabel = new JLabel(copyIcon);
+
                 JPanel balloonContent = new RoundedPanel(15, new JBColor(Gray._60, Gray._60));
                 balloonContent.add(iconLabel);
-                balloonContentRef = balloonContent;
 
                 balloon = JBPopupFactory.getInstance()
                         .createBalloonBuilder(balloonContent)
                         .setShowCallout(false)
                         .setAnimationCycle(200)
-                        .setFillColor(new JBColor(new Color(0, 0, 0, 0), new Color(0,0,0,0)))
-                        .setBorderColor(new JBColor(new Color(60, 60, 0, 0), new Color(60,60,0,0)))
+                        .setFillColor(new JBColor(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0)))
+                        .setBorderColor(new JBColor(new Color(60, 60, 0, 0), new Color(60, 60, 0, 0)))
                         .setBorderInsets(JBUI.emptyInsets())
                         .createBalloon();
 
-                int x = logLabel.getWidth() - logLabel.getWidth() - 20;
+                int x = logLabel.getWidth() - logLabel.getWidth() - 70;
                 int y = logLabel.getHeight() / 2;
                 RelativePoint rp = new RelativePoint(logLabel, new Point(x, y));
                 balloon.show(rp, Balloon.Position.below);
@@ -165,33 +138,71 @@ public class enterLogPanelUI {
                     balloon.hide();
                 }
             }
-
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (balloonContentRef != null) {
-                    Color original = balloonContentRef.getBackground();
-                    balloonContentRef.setBackground(new JBColor(Gray._100, Gray._100));
-                    balloonContentRef.repaint();
-                    new Timer(150, evt -> {
-                        balloonContentRef.setBackground(original);
-                        balloonContentRef.repaint();
-                    }).start();
-                }
-                if (isShowingLog[0]) {
-                    copyToClipboard(log);
-                } else {
-                    StringSelection selection = new StringSelection(fullLog);
-                    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                    clipboard.setContents(selection, null);
-                }
-            }
         });
-        buttonPanel.add(showInLogcatButton);
-
         return entryPanel;
     }
 
-    // מחלקה לכפתור מעוגל המבוססת על RoundedPanel
+
+    // פונקציה ליצירת כפתורי פעולה (עם אייקון ו-tooltip)
+    private static JLabel createActionButton() {
+        Icon icon = IconLoader.getIcon("/icons/logcatIcon.svg", enterLogPanelUI.class);
+        JLabel button = new JLabel(icon);
+        button.setToolTipText("Show in Logcat");
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
+    // פונקציה להעתקת טקסט ללוח (עם ניסיונות לחלץ UID או אובייקט)
+    private static void copyToClipboard(String text) {
+        String uid = null;
+        String obj = null;
+        if (text.contains("UID")) {
+            uid = text.substring(text.indexOf("UID") + 4);
+        } else if (text.contains("{") && text.contains("}")) {
+            obj = text.substring(text.indexOf("{"), text.indexOf("}") + 1);
+        }
+        StringSelection selection = new StringSelection(uid != null ? uid : obj != null ? obj : text);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
+    }
+
+    // פונקציה לחילוץ טיימסטאמפ מהלוג (לרוב מההתחלה, עד 18 תווים)
+    private static String extractTimestamp(String log) {
+        if (log != null && log.length() > 18) {
+            return log.substring(0, 18).trim();
+        }
+        return null;
+    }
+
+    // פונקציה לקריאה לניווט בלוגקאט לפי טיימסטאמפ
+    private static void showInLogcat(String timestamp) {
+        LogcatNavigator.navigateToLogcatEntry(timestamp);
+    }
+
+    // מחלקה פנימית לציור פאנל מעוגל
+    public static class RoundedPanel extends JPanel {
+        private final int cornerRadius;
+        private final Color backgroundColor;
+
+        public RoundedPanel(int cornerRadius, Color backgroundColor) {
+            this.cornerRadius = cornerRadius;
+            this.backgroundColor = backgroundColor;
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            Shape round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
+            g2.setColor(backgroundColor);
+            g2.fill(round);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    }
+
+    // מחלקה פנימית לכפתור מעוגל המבוסס על RoundedPanel
     public static class RoundedButton extends RoundedPanel {
         private ActionListener actionListener;
 
@@ -203,10 +214,8 @@ public class enterLogPanelUI {
             iconLabel.setHorizontalAlignment(JLabel.CENTER);
             iconLabel.setVerticalAlignment(JLabel.CENTER);
             add(iconLabel, BorderLayout.CENTER);
-
             setBorder(BorderFactory.createEmptyBorder());
             setOpaque(false);
-
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -233,69 +242,6 @@ public class enterLogPanelUI {
 
         public void setActionListener(ActionListener listener) {
             this.actionListener = listener;
-        }
-    }
-
-    // פונקציה להעתקת טקסט ללוח
-    private static void copyToClipboard(String text) {
-        String uid = null;
-        String obj = null;
-        if (text.contains("UID")) {
-            uid = text.substring(text.indexOf("UID") + 4);
-        } else if (text.contains("{") && text.contains("}")) {
-            obj = text.substring(text.indexOf("{"), text.indexOf("}") + 1);
-        }
-        StringSelection selection = new StringSelection(uid != null ? uid : obj != null ? obj : text);
-        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        clipboard.setContents(selection, selection);
-    }
-
-    private static String extractTimestamp(String log) {
-        // Extract timestamp from the beginning of the log
-        // Format is typically at the beginning, up to 14 characters
-        if (log != null && log.length() > 18) {
-            return log.substring(0, 18).trim();
-        }
-        return null;
-    }
-
-    private static void showInLogcat(String timestamp) {
-        // Call the method in new LogcatNavigator class
-        LogcatNavigator.navigateToLogcatEntry(timestamp);
-    }
-    // פונקציה להצגת פידבק ויזואלי קצר (לדוגמה, שינוי רקע זמני)
-    private static void showTemporaryFeedback(JComponent component) {
-        Color original = component.getBackground();
-        component.setBackground(new JBColor(Gray._100, Gray._100));
-        component.repaint();
-        new Timer(150, evt -> {
-            component.setBackground(original);
-            component.repaint();
-        }).start();
-    }
-
-    // מחלקה פנימית לציור פאנל מעוגל
-    public static class RoundedPanel extends JPanel {
-        private final int cornerRadius;
-        private final Color backgroundColor;
-
-        public RoundedPanel(int cornerRadius, Color backgroundColor) {
-            this.cornerRadius = cornerRadius;
-            this.backgroundColor = backgroundColor;
-            setOpaque(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            Shape round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
-            g2.setColor(backgroundColor);
-            g2.fill(round);
-
-            g2.dispose();
-            super.paintComponent(g);
         }
     }
 }
