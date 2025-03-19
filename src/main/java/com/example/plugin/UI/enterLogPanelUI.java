@@ -148,14 +148,14 @@ public class enterLogPanelUI {
             public void mouseEntered(MouseEvent e) {
                 Icon copyIcon = IconLoader.getIcon("AllIcons.Actions.Copy", getClass());
                 JLabel iconLabel = new JLabel(copyIcon);
-                JPanel balloonContent = new RoundedPanel(15, new JBColor(Gray._60, Gray._60));
+                JPanel balloonContent = new RoundedPanel(8, new JBColor(Gray._60, Gray._60));
+                balloonContent.setLayout(new BorderLayout());
+                balloonContent.add(iconLabel, BorderLayout.CENTER);
                 balloonContent.add(iconLabel);
                 balloon = JBPopupFactory.getInstance()
                         .createBalloonBuilder(balloonContent)
                         .setShowCallout(false)
                         .setAnimationCycle(200)
-                        .setFillColor(new JBColor(new Color(0, 0, 0, 0), new Color(0, 0, 0, 0)))
-                        .setBorderColor(new JBColor(new Color(60, 60, 0, 0), new Color(60, 60, 0, 0)))
                         .setBorderInsets(JBUI.emptyInsets())
                         .createBalloon();
                 int x = logLabel.getWidth() - logLabel.getWidth() - 70;
@@ -170,7 +170,6 @@ public class enterLogPanelUI {
                 }
             }
         });
-
         return entryPanel;
     }
 
