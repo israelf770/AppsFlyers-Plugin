@@ -1,4 +1,3 @@
-
 package com.example.plugin.actions;
 
 import com.example.plugin.showLogs;
@@ -8,13 +7,14 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.Icon;
 import com.intellij.openapi.util.IconLoader;
 
-
-
-
+/**
+ * Action that filters logs to show only launch-related entries.
+ */
 public class ShowLaunchAction extends AnAction {
     public static class MyClass {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/launchIcon.svg", MyClass.class);
     }
+
     public ShowLaunchAction() {
         super("LAUNCH", "Show launch logs", MyClass.MY_ICON);
     }

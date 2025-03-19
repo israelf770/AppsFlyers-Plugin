@@ -9,17 +9,21 @@ import javax.swing.Icon;
 import com.intellij.openapi.util.IconLoader;
 import static com.example.plugin.UI.LogToolWindowFactory.deviceCombo;
 
-
+/**
+ * Action that starts the logcat process and maintains the selected device.
+ */
 public class RunAction extends AnAction {
     public static class MyClass {
         public static final Icon MY_ICON = IconLoader.getIcon("AllIcons.Actions.Execute", MyClass.class);
     }
+
     public RunAction() {
         super("RUN", "Run action", MyClass.MY_ICON);
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
+        // Store selected device index to restore it after loading devices
         int selectedIndex = deviceCombo.getSelectedIndex();
         LogToolWindowFactory.loadDevices();
         deviceCombo.setSelectedIndex(selectedIndex);
