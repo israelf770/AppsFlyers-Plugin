@@ -28,14 +28,12 @@ public class enterLogPanelUI {
         // Set minimum size with the full width and our minimum height
         entryPanel.setMinimumSize(new Dimension(100, MIN_PANEL_HEIGHT));
 
-        // Prepare short/full HTML with improved text wrapping
-        String htmlLogShort = "<html><div style='width:100%; white-space:pre-wrap; word-wrap:break-word;'>"
-                + log + "</div></html>";
-        String htmlLogFull = "<html><div style='width:100%; white-space:pre-wrap; word-wrap:break-word;'>"
-                + fullLog + "</div></html>";
-
-        // Label with default short text
-        JLabel logLabel = new JLabel(htmlLogShort);
+        // Use JTextArea for logLabel to enable text wrapping
+        JTextArea logLabel = new JTextArea(log);
+        logLabel.setLineWrap(true);
+        logLabel.setWrapStyleWord(true);
+        logLabel.setEditable(false);
+        logLabel.setOpaque(false);
         applyColorLogic(logLabel, log);
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
         logLabel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
@@ -52,9 +50,9 @@ public class enterLogPanelUI {
 
         toggleButton.setActionListener(e -> {
             if (isShowingLog[0]) {
-                logLabel.setText(htmlLogFull);
+                logLabel.setText(fullLog);
             } else {
-                logLabel.setText(htmlLogShort);
+                logLabel.setText(log);
             }
             isShowingLog[0] = !isShowingLog[0];
 
@@ -155,7 +153,7 @@ public class enterLogPanelUI {
         return entryPanel;
     }
 
-    private static void applyColorLogic(JLabel logLabel, String log) {
+    private static void applyColorLogic(JTextArea logLabel, String log) {
         if (log.contains("No deep link") || log.contains("FAILURE")) {
             logLabel.setForeground(new Color(230, 65, 65, 126));
             if (log.contains("FAILURE")) {
@@ -168,7 +166,7 @@ public class enterLogPanelUI {
         }
     }
 
-    private static void showFailureAdvice(JLabel logLabel) {
+    private static void showFailureAdvice(JTextArea logLabel) {
         String adviceMessage = "<html><div;'>"
                 + " Advice: <br>"
                 + " * Check your network connection, <br> "
