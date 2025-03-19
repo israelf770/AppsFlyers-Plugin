@@ -11,6 +11,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.Gray;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -156,14 +157,46 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
             String currentFilter = showLogs.getCurrentFilter();
 
+            // Create a wrapper panel to hold all log entries
+            JPanel contentPanel = new JPanel();
+            contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+
+            // Count how many log entries we'll display
+            int entryCount = 0;
+
             // Iterate through all logs and add only those that match the current filter
             for (LogEntry entry : showLogs.getAllLogs()) {
                 if (showLogs.logMatchesFilter(entry.getShortLog(), currentFilter)) {
                     JPanel entryPanel = enterLogPanelUI.createLogEntryPanel(entry.getShortLog(), entry.getFullLog());
-                    logPanel.add(entryPanel);
-                    logPanel.add(Box.createVerticalStrut(10)); // Space between entries
+
+                    // Make sure the entry panel fills the width
+                    entryPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                    contentPanel.add(entryPanel);
+                    contentPanel.add(Box.createVerticalStrut(10)); // Space between entries
+                    entryCount++;
                 }
             }
+
+            // If no entries were found, add a message
+            if (entryCount == 0) {
+                JLabel noLogsLabel = new JLabel("No logs found matching the current filter");
+                noLogsLabel.setForeground(JBColor.GRAY);
+                noLogsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                contentPanel.add(Box.createVerticalGlue());
+                contentPanel.add(noLogsLabel);
+                contentPanel.add(Box.createVerticalGlue());
+            }
+
+            // Add some padding at the bottom
+            contentPanel.add(Box.createVerticalStrut(20));
+
+            // Add the content panel to the main log panel
+            logPanel.setLayout(new BorderLayout());
+            logPanel.add(contentPanel, BorderLayout.NORTH);
+
+            // Add a glue component to push everything to the top
+            logPanel.add(Box.createVerticalGlue(), BorderLayout.CENTER);
 
             logPanel.revalidate();
             logPanel.repaint();
