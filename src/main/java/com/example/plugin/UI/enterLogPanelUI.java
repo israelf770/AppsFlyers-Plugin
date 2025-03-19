@@ -30,7 +30,7 @@ public class enterLogPanelUI {
                 + fullLog + "</div></html>";
         // Label with default short text
         JLabel logLabel = new JLabel(htmlLogShort);
-        logLabel.setForeground(JBColor.foreground()); // Or apply color logic if needed
+        applyColorLogic(logLabel, log);
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
         logLabel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
         final boolean[] isShowingLog = {true};
@@ -120,6 +120,30 @@ public class enterLogPanelUI {
         });
         return entryPanel;
     }
+
+    private static void applyColorLogic(JLabel logLabel, String log) {
+        if (log.contains("No deep link") || log.contains("FAILURE")) {
+            logLabel.setForeground(new Color(230, 65, 65, 126));
+            if (log.contains("FAILURE")) {
+                showFailureAdvice(logLabel);
+            }
+        } else if (log.contains("SUCCESS")) {
+            logLabel.setForeground(new Color(65, 230, 65, 126));
+        } else {
+            logLabel.setForeground(JBColor.foreground());
+        }
+    }
+
+    private static void showFailureAdvice(JLabel logLabel) {
+        String adviceMessage = "<html><div;'>"
+                + " Advice: <br>"
+                + " * Check your network connection, <br> "
+                + "ensure the server is running,<br> "
+                + "* Check if the DevKey correct, <br>"
+                + "* Verify your credentials.</div></html>";
+        logLabel.setToolTipText(adviceMessage);
+    }
+
     // פונקציה ליצירת כפתורי פעולה (עם אייקון ו-tooltip)
     private static JLabel createActionButton() {
         Icon icon = IconLoader.getIcon("/icons/logcatIcon.svg", enterLogPanelUI.class);

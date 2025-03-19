@@ -86,7 +86,7 @@ public class LogcatProcessHandler {
                     processLog("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
-                } else if (text.contains("preparing data:")) {
+                } else if (text.contains("INAPP-")) {
                     processEventLog("EVENT", text, date);
                 } else if (text.contains("deepLink")||text.contains("No deep link detected")) {
                     processEventLog("DEEPLINK", text, date);
