@@ -7,13 +7,14 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.Icon;
 import com.intellij.openapi.util.IconLoader;
 
-
-
-
+/**
+ * Action that filters logs to show only event-related entries.
+ */
 public class ShowEventAction extends AnAction {
     public static class MyClass {
         public static final Icon MY_ICON = IconLoader.getIcon("/icons/eventIcon.svg", MyClass.class);
     }
+
     public ShowEventAction() {
         super("EVENT", "Show event logs", MyClass.MY_ICON);
     }
