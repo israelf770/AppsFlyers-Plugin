@@ -9,6 +9,7 @@ import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
+import javax.swing.text.View;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
@@ -34,13 +35,15 @@ public class enterLogPanelUI {
         logLabel.setWrapStyleWord(true);
         logLabel.setEditable(false);
         logLabel.setOpaque(false);
-        applyColorLogic(logLabel, log);
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
         logLabel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
 
+        // Adjust the JTextArea height based on its content
+        adjustTextAreaHeight(logLabel, entryPanel);
+
         final boolean[] isShowingLog = {true};
 
-        // 1) Create the toggle button
+        // Create the toggle button
         Icon toggleIcon = IconLoader.getIcon("AllIcons.Actions.SwapPanels", enterLogPanelUI.class);
         RoundedButton toggleButton = new RoundedButton(
                 toggleIcon, 15,
@@ -58,6 +61,7 @@ public class enterLogPanelUI {
 
             // Recalculate the panel size after toggling
             SwingUtilities.invokeLater(() -> {
+                adjustTextAreaHeight(logLabel, entryPanel);
                 entryPanel.invalidate();
                 Container parent = entryPanel.getParent();
                 if (parent != null) {
@@ -67,7 +71,7 @@ public class enterLogPanelUI {
             });
         });
 
-        // 2) Create the "Show in Logcat" button
+        // Create the "Show in Logcat" button
         JLabel showInLogcatButton = createActionButton(); // the method returning a JLabel with logcatIcon
         String timestamp = extractTimestamp(log);         // get timestamp for showInLogcat
         showInLogcatButton.addMouseListener(new MouseAdapter() {
@@ -77,7 +81,7 @@ public class enterLogPanelUI {
             }
         });
 
-        // 3) Put BOTH buttons in a single panel with horizontal layout
+        // Put BOTH buttons in a single panel with horizontal layout
         JPanel leftButtonsPanel = new JPanel();
         leftButtonsPanel.setLayout(new BoxLayout(leftButtonsPanel, BoxLayout.X_AXIS));
         leftButtonsPanel.setOpaque(false);
@@ -87,7 +91,7 @@ public class enterLogPanelUI {
         leftButtonsPanel.add(Box.createHorizontalStrut(5));
         leftButtonsPanel.add(showInLogcatButton);
 
-        // 4) Create a wrapper panel to hold (leftButtonsPanel) on the WEST, and (logLabel) in CENTER
+        // Create a wrapper panel to hold (leftButtonsPanel) on the WEST, and (logLabel) in CENTER
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setOpaque(false);
         wrapper.add(leftButtonsPanel, BorderLayout.WEST);
@@ -104,7 +108,15 @@ public class enterLogPanelUI {
                 Math.max(MIN_PANEL_HEIGHT,
                         logLabel.getPreferredSize().height + 16)));
 
-        // 5) MouseListener on the entryPanel for copying text if clicked outside the buttons
+        // Add a ComponentListener to adjust the height based on the width
+        entryPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                adjustTextAreaHeight(logLabel, entryPanel);
+            }
+        });
+
+        // MouseListener on the entryPanel for copying text if clicked outside the buttons
         logLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -153,16 +165,18 @@ public class enterLogPanelUI {
         return entryPanel;
     }
 
-    private static void applyColorLogic(JTextArea logLabel, String log) {
-        if (log.contains("No deep link") || log.contains("FAILURE")) {
-            logLabel.setForeground(new Color(230, 65, 65, 126));
-            if (log.contains("FAILURE")) {
-                showFailureAdvice(logLabel);
-            }
-        } else if (log.contains("SUCCESS")) {
-            logLabel.setForeground(new Color(65, 230, 65, 126));
-        } else {
-            logLabel.setForeground(JBColor.foreground());
+    static void adjustTextAreaHeight(JTextArea textArea, JPanel globalPanel) {
+        int width = textArea.getWidth();
+        if (width > 0) {
+            View view = textArea.getUI().getRootView(textArea);
+            view.setSize(width, Integer.MAX_VALUE);
+            float preferredHeight = view.getPreferredSpan(View.Y_AXIS);
+            textArea.setPreferredSize(new Dimension(width, (int) preferredHeight));
+            textArea.revalidate();
+
+            // Adjust the size of the global panel
+            globalPanel.setPreferredSize(new Dimension(globalPanel.getWidth(), (int) preferredHeight + 16));
+            globalPanel.revalidate();
         }
     }
 
