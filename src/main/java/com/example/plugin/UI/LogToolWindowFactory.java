@@ -16,6 +16,9 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
+
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.List;
 import javax.swing.*;
 import java.awt.*;
@@ -23,33 +26,28 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// LogToolWindowFactory.java
 public class LogToolWindowFactory implements ToolWindowFactory {
 
-    // Reference to the log panel for updates
     private static JPanel logPanel;
     public static JComboBox<String> deviceCombo;
     private static Project currentProject;
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        // Store reference to current project for later use
         currentProject = project;
 
-        // נבנה פאנל ראשי שמכיל את כל התוכן
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Gray._30);
 
-        // צור Panel עליון שישמש לבחירת מכשיר
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Gray._30);
-        topPanel.setBorder(JBUI.Borders.empty(8, 15)); // same margin as the log panels
+        topPanel.setBorder(JBUI.Borders.empty(8, 15));
 
-        // צור ComboBox (או כל רכיב אחר שתרצה)
         deviceCombo = new ComboBox<>();
         deviceCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, deviceCombo.getPreferredSize().height));
         deviceCombo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // בעת בחירה ב-ComboBox, נעדכן את המכשיר הנבחר
         deviceCombo.addActionListener(e -> {
             String selectedDevice = (String) deviceCombo.getSelectedItem();
             selectedDevice = ExtractParentheses(selectedDevice);
@@ -62,7 +60,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
             }
         });
 
-        // הוסף את topPanel לחלק העליון של mainPanel
         mainPanel.add(topPanel, BorderLayout.NORTH);
         topPanel.add(deviceCombo, BorderLayout.CENTER);
 
@@ -83,7 +80,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         topPanel.removeAll();
         topPanel.add(comboPanel, BorderLayout.CENTER);
 
-        // Log panel
         logPanel = new JPanel();
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logPanel.setBackground(Gray._30);
@@ -92,6 +88,21 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         deviceScrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
         deviceScrollPane.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         mainPanel.add(deviceScrollPane, BorderLayout.CENTER);
+
+        mainPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                for (Component comp : logPanel.getComponents()) {
+                    if (comp instanceof JPanel) {
+                        for (Component innerComp : ((JPanel) comp).getComponents()) {
+                            if (innerComp instanceof JTextArea) {
+                                enterLogPanelUI.adjustTextAreaHeight((JTextArea) innerComp, (JPanel) comp);
+                            }
+                        }
+                    }
+                }
+            }
+        });
 
         Content content = ContentFactory.getInstance().createContent(mainPanel, "", false);
         toolWindow.getContentManager().addContent(content);
@@ -138,7 +149,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
     public static void loadDevices() {
         try {
-            // קבל רשימת מכשירים
             List<String> devices = GetInfo.getConnectedDevices(GetInfo.getAdbPath());
             deviceCombo.removeAllItems();
             if (devices.isEmpty()) {
@@ -158,6 +168,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
             deviceCombo.addItem("Error retrieving devices");
         }
     }
+
     private static boolean containsDevice(JComboBox<String> combo, String device) {
         ComboBoxModel<String> model = combo.getModel();
         for (int i = 0; i < model.getSize(); i++) {
@@ -191,7 +202,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                     entryPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
                     contentPanel.add(entryPanel);
-                    contentPanel.add(Box.createVerticalStrut(10)); // Space between entries
+                    contentPanel.add(Box.createVerticalStrut(10));
                     entryCount++;
                 }
             }
@@ -222,7 +233,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
     }
 
     public static String ExtractParentheses(String currentDevice) {
-        // הביטוי הרגולרי מחפש כל מה שבין סוגריים
         if (currentDevice == null) {
             return null;
         }
@@ -230,7 +240,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         Matcher matcher = pattern.matcher(currentDevice);
         String insideParentheses = null;
         if (matcher.find()) {
-            // הקבוצה הראשונה מכילה את הטקסט שבתוך הסוגריים
             insideParentheses = matcher.group(1);
         }
         return insideParentheses;

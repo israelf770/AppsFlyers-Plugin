@@ -9,6 +9,7 @@ import com.intellij.ui.awt.RelativePoint;
 import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
+import javax.swing.text.View;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
@@ -29,18 +30,20 @@ public class enterLogPanelUI {
         entryPanel.setMinimumSize(new Dimension(100, MIN_PANEL_HEIGHT));
 
         // Use JTextArea for logLabel to enable text wrapping
-        JLabel logLabel = new JLabel(log);
-        logLabel.putClientProperty("html.disable", Boolean.FALSE);
-        String htmlText = "<html><body style='width: 100%'>" + log + "</body></html>";
-        logLabel.setText(htmlText);
+        JTextArea logLabel = new JTextArea(log);
+        logLabel.setLineWrap(true);
+        logLabel.setWrapStyleWord(true);
+        logLabel.setEditable(false);
         logLabel.setOpaque(false);
-        applyIconLogic(logLabel, log);
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
         logLabel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
 
+        // Adjust the JTextArea height based on its content
+        adjustTextAreaHeight(logLabel, entryPanel);
+
         final boolean[] isShowingLog = {true};
 
-        // 1) Create the toggle button
+        // Create the toggle button
         Icon toggleIcon = IconLoader.getIcon("AllIcons.Actions.SwapPanels", enterLogPanelUI.class);
         RoundedButton toggleButton = new RoundedButton(
                 toggleIcon, 15,
@@ -58,6 +61,7 @@ public class enterLogPanelUI {
 
             // Recalculate the panel size after toggling
             SwingUtilities.invokeLater(() -> {
+                adjustTextAreaHeight(logLabel, entryPanel);
                 entryPanel.invalidate();
                 Container parent = entryPanel.getParent();
                 if (parent != null) {
@@ -67,7 +71,7 @@ public class enterLogPanelUI {
             });
         });
 
-        // 2) Create the "Show in Logcat" button
+        // Create the "Show in Logcat" button
         JLabel showInLogcatButton = createActionButton(); // the method returning a JLabel with logcatIcon
         String timestamp = extractTimestamp(log);         // get timestamp for showInLogcat
         showInLogcatButton.addMouseListener(new MouseAdapter() {
@@ -77,7 +81,7 @@ public class enterLogPanelUI {
             }
         });
 
-        // 3) Put BOTH buttons in a single panel with horizontal layout
+        // Put BOTH buttons in a single panel with horizontal layout
         JPanel leftButtonsPanel = new JPanel();
         leftButtonsPanel.setLayout(new BoxLayout(leftButtonsPanel, BoxLayout.X_AXIS));
         leftButtonsPanel.setOpaque(false);
@@ -87,7 +91,7 @@ public class enterLogPanelUI {
         leftButtonsPanel.add(Box.createHorizontalStrut(5));
         leftButtonsPanel.add(showInLogcatButton);
 
-        // 4) Create a wrapper panel to hold (leftButtonsPanel) on the WEST, and (logLabel) in CENTER
+        // Create a wrapper panel to hold (leftButtonsPanel) on the WEST, and (logLabel) in CENTER
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setOpaque(false);
         wrapper.add(leftButtonsPanel, BorderLayout.WEST);
@@ -104,7 +108,15 @@ public class enterLogPanelUI {
                 Math.max(MIN_PANEL_HEIGHT,
                         logLabel.getPreferredSize().height + 16)));
 
-        // 5) MouseListener on the entryPanel for copying text if clicked outside the buttons
+        // Add a ComponentListener to adjust the height based on the width
+        entryPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                adjustTextAreaHeight(logLabel, entryPanel);
+            }
+        });
+
+        // MouseListener on the entryPanel for copying text if clicked outside the buttons
         logLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -153,29 +165,22 @@ public class enterLogPanelUI {
         return entryPanel;
     }
 
+    static void adjustTextAreaHeight(JTextArea textArea, JPanel globalPanel) {
+        int width = textArea.getWidth();
+        if (width > 0) {
+            View view = textArea.getUI().getRootView(textArea);
+            view.setSize(width, Integer.MAX_VALUE);
+            float preferredHeight = view.getPreferredSpan(View.Y_AXIS);
+            textArea.setPreferredSize(new Dimension(width, (int) preferredHeight));
+            textArea.revalidate();
 
-    private static void applyIconLogic(JLabel logLabel, String log) {
-        Icon successIcon = IconLoader.getIcon("AllIcons.Debugger.ThreadStates.Idle", enterLogPanelUI.class);
-        Icon failureIcon = IconLoader.getIcon("AllIcons.General.Error", enterLogPanelUI.class);
-        Icon infoIcon = IconLoader.getIcon("AllIcons.General.Information", enterLogPanelUI.class);
-
-
-        if (log.contains("No deep link") || log.contains("FAILURE")) {
-            logLabel.setIcon(failureIcon);
-            if (log.contains("FAILURE")) {
-                showFailureAdvice(logLabel);
-            }
-        } else if (log.contains("SUCCESS")) {
-            logLabel.setIcon(successIcon);
-        } else {
-            logLabel.setIcon(infoIcon);
+            // Adjust the size of the global panel
+            globalPanel.setPreferredSize(new Dimension(globalPanel.getWidth(), (int) preferredHeight + 16));
+            globalPanel.revalidate();
         }
-
-        // Add some spacing between icon and text
-        logLabel.setIconTextGap(10);
     }
 
-    private static void showFailureAdvice(JLabel logLabel) {
+    private static void showFailureAdvice(JTextArea logLabel) {
         String adviceMessage = "<html><div;'>"
                 + " Advice: <br>"
                 + " * Check your network connection, <br> "
