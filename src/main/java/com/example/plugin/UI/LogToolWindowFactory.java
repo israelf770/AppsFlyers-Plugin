@@ -118,10 +118,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         loadDevices();
     }
 
-    public static Project getCurrentProject() {
-        return currentProject;
-    }
-
     public static void loadDevices() {
         try {
             List<String> devices = GetInfo.getConnectedDevices(GetInfo.getAdbPath());
