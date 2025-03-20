@@ -29,12 +29,12 @@ public class enterLogPanelUI {
         entryPanel.setMinimumSize(new Dimension(100, MIN_PANEL_HEIGHT));
 
         // Use JTextArea for logLabel to enable text wrapping
-        JTextArea logLabel = new JTextArea(log);
-        logLabel.setLineWrap(true);
-        logLabel.setWrapStyleWord(true);
-        logLabel.setEditable(false);
+        JLabel logLabel = new JLabel(log);
+        logLabel.putClientProperty("html.disable", Boolean.FALSE);
+        String htmlText = "<html><body style='width: 100%'>" + log + "</body></html>";
+        logLabel.setText(htmlText);
         logLabel.setOpaque(false);
-        applyColorLogic(logLabel, log);
+        applyIconLogic(logLabel, log);
         logLabel.setFont(logLabel.getFont().deriveFont(Font.PLAIN, 12f));
         logLabel.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
 
@@ -153,20 +153,29 @@ public class enterLogPanelUI {
         return entryPanel;
     }
 
-    private static void applyColorLogic(JTextArea logLabel, String log) {
+
+    private static void applyIconLogic(JLabel logLabel, String log) {
+        Icon successIcon = IconLoader.getIcon("AllIcons.Debugger.ThreadStates.Idle", enterLogPanelUI.class);
+        Icon failureIcon = IconLoader.getIcon("AllIcons.General.Error", enterLogPanelUI.class);
+        Icon infoIcon = IconLoader.getIcon("AllIcons.General.Information", enterLogPanelUI.class);
+
+
         if (log.contains("No deep link") || log.contains("FAILURE")) {
-            logLabel.setForeground(new Color(230, 65, 65, 126));
+            logLabel.setIcon(failureIcon);
             if (log.contains("FAILURE")) {
                 showFailureAdvice(logLabel);
             }
         } else if (log.contains("SUCCESS")) {
-            logLabel.setForeground(new Color(65, 230, 65, 126));
+            logLabel.setIcon(successIcon);
         } else {
-            logLabel.setForeground(JBColor.foreground());
+            logLabel.setIcon(infoIcon);
         }
+
+        // Add some spacing between icon and text
+        logLabel.setIconTextGap(10);
     }
 
-    private static void showFailureAdvice(JTextArea logLabel) {
+    private static void showFailureAdvice(JLabel logLabel) {
         String adviceMessage = "<html><div;'>"
                 + " Advice: <br>"
                 + " * Check your network connection, <br> "
