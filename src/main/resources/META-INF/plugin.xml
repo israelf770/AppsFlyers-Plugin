@@ -11,7 +11,6 @@
     <!-- Keep only IntelliJ Platform dependency -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.lang</depends>
-<!--    <depends>com.intellij.modules.androidstudio</depends>-->
 
     <!-- Notification group definition -->
     <extensions defaultExtensionNs="com.intellij">

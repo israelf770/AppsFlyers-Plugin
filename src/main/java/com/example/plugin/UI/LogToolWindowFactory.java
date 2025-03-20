@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.example.plugin.UI.enterLogPanelUI.adjustTextAreaHeight;
+
 // LogToolWindowFactory.java
 public class LogToolWindowFactory implements ToolWindowFactory {
 
@@ -96,7 +98,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                     if (comp instanceof JPanel) {
                         for (Component innerComp : ((JPanel) comp).getComponents()) {
                             if (innerComp instanceof JTextArea) {
-                                enterLogPanelUI.adjustTextAreaHeight((JTextArea) innerComp, (JPanel) comp);
+                               adjustTextAreaHeight((JTextArea) innerComp, (JPanel) comp);
                             }
                         }
                     }
