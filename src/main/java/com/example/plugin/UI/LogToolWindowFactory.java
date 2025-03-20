@@ -5,7 +5,6 @@ import com.example.plugin.LogcatProcessHandler;
 import com.example.plugin.actions.*;
 import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
@@ -21,7 +20,6 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,8 +29,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
     private static JPanel logPanel;
     public static JComboBox<String> deviceCombo;
     private static Project currentProject;
-
-
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
@@ -48,19 +44,15 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         topPanel.setBackground(Gray._30);
         topPanel.setBorder(JBUI.Borders.empty(8, 15)); // same margin as the log panels
 
-
         // צור ComboBox (או כל רכיב אחר שתרצה)
         deviceCombo = new ComboBox<>();
         deviceCombo.setMaximumSize(new Dimension(Integer.MAX_VALUE, deviceCombo.getPreferredSize().height));
         deviceCombo.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-//        int selectedIndex = deviceCombo.getSelectedIndex();
-//        deviceCombo.setSelectedIndex(selectedIndex); // ברירת מחדל - הראשון
-
         // בעת בחירה ב-ComboBox, נעדכן את המכשיר הנבחר
         deviceCombo.addActionListener(e -> {
             String selectedDevice = (String) deviceCombo.getSelectedItem();
-            selectedDevice =  ExtractParentheses(selectedDevice);
+            selectedDevice = ExtractParentheses(selectedDevice);
 
             if (selectedDevice != null && !"No devices".equals(selectedDevice)
                     && !"Error retrieving devices".equals(selectedDevice)) {
@@ -68,49 +60,76 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                 LogcatProcessHandler.setSelectedDeviceId(selectedDevice);
                 LogcatProcessHandler.startLogcat();
             }
-
         });
 
         // הוסף את topPanel לחלק העליון של mainPanel
         mainPanel.add(topPanel, BorderLayout.NORTH);
         topPanel.add(deviceCombo, BorderLayout.CENTER);
 
-        // Actions for the tab header
-        AnAction showAllAction = new ShowAllAction();
-        AnAction showConversionAction = new ShowConversionAction();
-        AnAction showEventAction = new ShowEventAction();
-        AnAction showLaunchAction = new ShowLaunchAction();
-        AnAction RunAction = new RunAction();
-        AnAction ShowDeepLinkAction = new ShowDeepLinkAction();
+        // Create action instances
+        AnAction runAction = new RunAction();
 
-        toolWindow.setTitleActions(Arrays.asList(
-                RunAction,
-                new Separator(),
-                showAllAction,
-                new Separator(),
-                showConversionAction,
-                new Separator(),
-                showEventAction,
-                new Separator(),
-                showLaunchAction,
-                new Separator(),
-                ShowDeepLinkAction
-        ));
+        // Set Run action as the only toolbar button
+        toolWindow.setTitleActions(java.util.Collections.singletonList(runAction));
+
+        // Create the filter dropdown in the toolbar area
+        JComboBox<String> filterCombo = getStringJComboBox();
+
+        // Add the filter combo box to the right side of the device combo
+        JPanel comboPanel = new JPanel(new BorderLayout(10, 0));
+        comboPanel.setBackground(Gray._30);
+        comboPanel.add(deviceCombo, BorderLayout.CENTER);
+        comboPanel.add(filterCombo, BorderLayout.EAST);
+        topPanel.removeAll();
+        topPanel.add(comboPanel, BorderLayout.CENTER);
 
         // Log panel
         logPanel = new JPanel();
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logPanel.setBackground(Gray._30);
 
-        JScrollPane scrollPane = new JBScrollPane(logPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
-        scrollPane.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane deviceScrollPane = new JBScrollPane(logPanel);
+        deviceScrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+        deviceScrollPane.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        mainPanel.add(deviceScrollPane, BorderLayout.CENTER);
 
         Content content = ContentFactory.getInstance().createContent(mainPanel, "", false);
         toolWindow.getContentManager().addContent(content);
 
         loadDevices();
+    }
+
+    private static @NotNull JComboBox<String> getStringJComboBox() {
+        JComboBox<String> filterCombo = new JComboBox<>();
+        filterCombo.addItem("All Logs");
+        filterCombo.addItem("Conversion Logs");
+        filterCombo.addItem("Event Logs");
+        filterCombo.addItem("Launch Logs");
+        filterCombo.addItem("Deep Link Logs");
+
+        filterCombo.addActionListener(e -> {
+            String selectedFilter = (String) filterCombo.getSelectedItem();
+            if (selectedFilter == null) return;
+
+            switch (selectedFilter) {
+                case "All Logs":
+                    showLogs.filterLogs(null); // Use null for "All Logs"
+                    break;
+                case "Conversion Logs":
+                    showLogs.filterLogs("CONVERSION");
+                    break;
+                case "Event Logs":
+                    showLogs.filterLogs("EVENT");
+                    break;
+                case "Launch Logs":
+                    showLogs.filterLogs("LAUNCH");
+                    break;
+                case "Deep Link Logs":
+                    showLogs.filterLogs("DEEPLINK");
+                    break;
+            }
+        });
+        return filterCombo;
     }
 
     public static Project getCurrentProject() {
@@ -150,7 +169,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
     }
 
     //Updates the log panel with logs that match the current filter
-
     public static void updateLogContentPanel() {
         if (logPanel != null) {
             logPanel.removeAll();
@@ -203,7 +221,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         }
     }
 
-
     public static String ExtractParentheses(String currentDevice) {
         // הביטוי הרגולרי מחפש כל מה שבין סוגריים
         if (currentDevice == null) {
@@ -218,5 +235,4 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         }
         return insideParentheses;
     }
-
 }
