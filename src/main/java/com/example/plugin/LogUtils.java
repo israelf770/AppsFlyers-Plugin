@@ -10,7 +10,7 @@ public class LogUtils {
     public static String extractMessageFromJson(String type, String logText) {
         try {
             // Special handling for "No deep link detected" message
-            if (type.equals("DEEPLINK") && logText.contains("No deep link")) {
+            if (type.equals("ERROR") && logText.contains("No deep link")) {
                 return logText;
             }
 

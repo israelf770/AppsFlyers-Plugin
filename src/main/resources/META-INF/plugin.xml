@@ -24,6 +24,11 @@
 
 
     <actions>
+        <action id="com.example.plugin.actions.ClearLogsAction"
+                class="com.example.plugin.actions.ClearLogsAction"
+                text="Clear Logs"
+                description="Cleler all logs"/>
+
     </actions>
 
 </idea-plugin>

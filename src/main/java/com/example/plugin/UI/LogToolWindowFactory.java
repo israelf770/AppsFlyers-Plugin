@@ -67,9 +67,11 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
         // Create action instances
         AnAction runAction = new RunAction();
+        AnAction clearLogsAction = new ClearLogsAction();
+
 
         // Set Run action as the only toolbar button
-        toolWindow.setTitleActions(java.util.Collections.singletonList(runAction));
+        toolWindow.setTitleActions(java.util.Arrays.asList(runAction, clearLogsAction));
 
         // Create the filter dropdown in the toolbar area
         JComboBox<String> filterCombo = getStringJComboBox();
@@ -119,6 +121,8 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         filterCombo.addItem("Event Logs");
         filterCombo.addItem("Launch Logs");
         filterCombo.addItem("Deep Link Logs");
+        filterCombo.addItem("Error Logs");
+
 
         filterCombo.addActionListener(e -> {
             String selectedFilter = (String) filterCombo.getSelectedItem();
@@ -139,6 +143,9 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                     break;
                 case "Deep Link Logs":
                     showLogs.filterLogs("DEEPLINK");
+                    break;
+                case "Error Logs": // Handle Error Logs
+                    showLogs.filterLogs("ERROR");
                     break;
             }
         });
@@ -224,6 +231,14 @@ public class LogToolWindowFactory implements ToolWindowFactory {
             // Add a glue component to push everything to the top
             logPanel.add(Box.createVerticalGlue(), BorderLayout.CENTER);
 
+            logPanel.revalidate();
+            logPanel.repaint();
+        }
+    }
+
+    public static void clearLogs() {
+        if (logPanel != null) {
+            logPanel.removeAll();
             logPanel.revalidate();
             logPanel.repaint();
         }

@@ -23,14 +23,6 @@ public class LogcatProcessHandler {
         selectedDeviceId = deviceId;
     }
 
-    public static void resetSelectedDevice() {
-        selectedDeviceId = null;
-    }
-
-    public static String getRawLogcatEntry(String timestamp) {
-        return rawLogcatEntries.get(timestamp);
-    }
-
     public static void startLogcat() {
         try {
             String adbPath = GetInfo.getAdbPath();
@@ -81,8 +73,11 @@ public class LogcatProcessHandler {
 
                 // Store the raw logcat entry for later lookup
                 rawLogcatEntries.put(date, text);
-
-                if (text.contains("CONVERSION-")) {
+                if (text.contains("FAILURE")) {
+                    processLog("ERROR", text, date);
+                } else if (text.contains("No deep link")) {
+                    processEventLog("ERROR", text, date);
+                } else if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
@@ -112,6 +107,14 @@ public class LogcatProcessHandler {
                     showLogs.showUpdateLogs(shortLog, type + " " + formattedLog, text)
             );
         }
+
+//        if (text.contains("FAILURE") || text.contains("No deep link")) {
+//            String errorLog = date + " / ERROR: " + text;
+//            SwingUtilities.invokeLater(() ->
+//                    showLogs.showUpdateLogs(errorLog, "ERROR", text)
+//            );
+//        }
+
     }
 
     private static void processEventLog(String type, String text, String date) {
