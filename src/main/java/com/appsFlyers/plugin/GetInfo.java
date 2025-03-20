@@ -1,4 +1,4 @@
-package com.example.plugin;
+package com.appsFlyers.plugin;
 
 import java.io.BufferedReader;
 import java.io.IOException;

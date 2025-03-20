@@ -1,13 +1,13 @@
-package com.example.plugin.actions;
+package com.appsFlyers.plugin.actions;
 
-import com.example.plugin.LogcatProcessHandler;
-import com.example.plugin.UI.LogToolWindowFactory;
+import com.appsFlyers.plugin.LogcatProcessHandler;
+import com.appsFlyers.plugin.UI.LogToolWindowFactory;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;
 import javax.swing.Icon;
 import com.intellij.openapi.util.IconLoader;
-import static com.example.plugin.UI.LogToolWindowFactory.deviceCombo;
+import static com.appsFlyers.plugin.UI.LogToolWindowFactory.deviceCombo;
 
 /**
  * Action that starts the logcat process and maintains the selected device.

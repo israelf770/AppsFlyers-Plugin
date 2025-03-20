@@ -1,4 +1,4 @@
-package com.example.plugin.UI;
+package com.appsFlyers.plugin.UI;
 
 public class LogEntry {
     private final String shortLog;

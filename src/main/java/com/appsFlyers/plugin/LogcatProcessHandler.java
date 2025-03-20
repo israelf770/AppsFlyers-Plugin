@@ -1,4 +1,4 @@
-package com.example.plugin;
+package com.appsFlyers.plugin;
 
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -21,14 +21,6 @@ public class LogcatProcessHandler {
 
     public static void setSelectedDeviceId(String deviceId) {
         selectedDeviceId = deviceId;
-    }
-
-    public static void resetSelectedDevice() {
-        selectedDeviceId = null;
-    }
-
-    public static String getRawLogcatEntry(String timestamp) {
-        return rawLogcatEntries.get(timestamp);
     }
 
     public static void startLogcat() {
@@ -81,15 +73,14 @@ public class LogcatProcessHandler {
 
                 // Store the raw logcat entry for later lookup
                 rawLogcatEntries.put(date, text);
-
                 if (text.contains("CONVERSION-")) {
-                    processLog("CONVERSION", text, date);
+                    processUID("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
-                    processLog("LAUNCH", text, date);
+                    processUID("LAUNCH", text, date);
                 } else if (text.contains("INAPP-")) {
-                    processEventLog("EVENT", text, date);
-                } else if (text.contains("deepLink")||text.contains("No deep link detected")) {
-                    processEventLog("DEEPLINK", text, date);
+                    processObject("EVENT", text, date);
+                } else if (text.contains("deepLink")||text.contains("No deep link")) {
+                    processObject("DEEPLINK", text, date);
                 }
             }
         });
@@ -97,12 +88,19 @@ public class LogcatProcessHandler {
         return processHandler;
     }
 
-    private static void processLog(String type, String text, String date) {
+    private static void processUID(String type, String text, String date) {
         String formattedLog = LogUtils.extractMessageFromJson(type, text);
 
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             String shortLog = date + " / " + type + ": " + text.substring(resIndex);
+            if(text.contains("FAILURE")){
+                String errorShortLog = date + " / " + type + ": " + text.substring(resIndex)+ " ERROR!";
+                SwingUtilities.invokeLater(() ->
+                        showLogs.showUpdateLogs(errorShortLog,type+ ": result", text)
+                );
+                return;
+            }
             SwingUtilities.invokeLater(() ->
                 showLogs.showUpdateLogs(shortLog,type + ": result", text)
             );
@@ -114,19 +112,21 @@ public class LogcatProcessHandler {
         }
     }
 
-    private static void processEventLog(String type, String text, String date) {
-        String eventInfo = LogUtils.extractMessageFromJson(type, text);
+    private static void processObject(String type, String text, String date) {
+        String finalLog = LogUtils.extractMessageFromJson(type, text);
 
-        if (eventInfo != null) {
-            SwingUtilities.invokeLater(() -> {
-                String logEntry = date + " / " + type + ":\n" + eventInfo;
-                showLogs.showUpdateLogs(logEntry, type, text);
-            });
+        if (finalLog != null) {
+            if (finalLog.contains("No deep link")) {
+                SwingUtilities.invokeLater(() -> {
+                    String errorLog = date + " / " + type + ":\n" + finalLog + " ERROR!";
+                    showLogs.showUpdateLogs(errorLog, type, text);
+                });
+            } else {
+                SwingUtilities.invokeLater(() -> {
+                    String logEntry = date + " / " + type + ":\n" + finalLog;
+                    showLogs.showUpdateLogs(logEntry, type, text);
+                });
+            }
         }
-    }
-
-    // Method to retrieve stored raw logs by timestamp
-    public static Map<String, String> getRawLogcatEntries() {
-        return rawLogcatEntries;
     }
 }

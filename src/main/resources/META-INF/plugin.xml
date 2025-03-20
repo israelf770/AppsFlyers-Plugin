@@ -1,7 +1,7 @@
 <idea-plugin>
 
     <id>com.example.plugin</id>
-    <name>Logcat</name>
+    <name>AppsFlyer LogCat Analyzer</name>
     <vendor email="israelmanor11@domain.com" url="https://www.appsflyer.com">appsflyer</vendor>
     <description><![CDATA[
     This plugin helps developers efficiently search and filter logs within the IDE. It integrates with your application and provides easy access to log data.
@@ -19,11 +19,16 @@
                 anchor="right"
                 secondary="true"
                 icon="/icons/appsflyer.svg"
-                factoryClass="com.example.plugin.UI.LogToolWindowFactory"/>
+                factoryClass="com.appsFlyers.plugin.UI.LogToolWindowFactory"/>
     </extensions>
 
 
     <actions>
+        <action id="com.appsFlyers.plugin.actions.ClearLogsAction"
+                class="com.appsFlyers.plugin.actions.ClearLogsAction"
+                text="Clear Logs"
+                description="Cleler all logs"/>
+
     </actions>
 
 </idea-plugin>
