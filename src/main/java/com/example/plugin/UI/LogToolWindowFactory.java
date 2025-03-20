@@ -5,7 +5,6 @@ import com.example.plugin.LogcatProcessHandler;
 import com.example.plugin.actions.*;
 import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
@@ -24,7 +23,6 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -145,10 +143,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
             }
         });
         return filterCombo;
-    }
-
-    public static Project getCurrentProject() {
-        return currentProject;
     }
 
     public static void loadDevices() {
