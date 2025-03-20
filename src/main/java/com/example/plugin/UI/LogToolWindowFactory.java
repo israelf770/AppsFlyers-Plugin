@@ -5,6 +5,7 @@ import com.example.plugin.LogcatProcessHandler;
 import com.example.plugin.actions.*;
 import com.example.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.wm.ToolWindow;
@@ -23,6 +24,7 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,10 +88,10 @@ public class LogToolWindowFactory implements ToolWindowFactory {
         logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
         logPanel.setBackground(Gray._30);
 
-        JScrollPane deviceScrollPane = new JBScrollPane(logPanel);
-        deviceScrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
-        deviceScrollPane.setPreferredSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-        mainPanel.add(deviceScrollPane, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JBScrollPane(logPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
 
         mainPanel.addComponentListener(new ComponentAdapter() {
             @Override
@@ -202,7 +204,6 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
                     // Make sure the entry panel fills the width
                     entryPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
                     contentPanel.add(entryPanel);
                     contentPanel.add(Box.createVerticalStrut(10));
                     entryCount++;

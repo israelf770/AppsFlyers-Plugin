@@ -1,4 +1,5 @@
 package com.example.plugin.UI;
+
 import com.example.plugin.LogcatNavigator;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
@@ -43,15 +44,16 @@ public class enterLogPanelUI {
 
         final boolean[] isShowingLog = {true};
 
-        // Create the toggle button
-        Icon toggleIcon = IconLoader.getIcon("AllIcons.Actions.SwapPanels", enterLogPanelUI.class);
-        RoundedButton toggleButton = new RoundedButton(
-                toggleIcon, 15,
-                new JBColor(new Color(60, 60, 0, 0), new Color(60, 60, 0, 0)),
-                new Dimension(30, 30)
-        );
+        // Create the three dots icon as a JLabel
+        JLabel optionsLabel = new JLabel(IconLoader.getIcon("AllIcons.Actions.More", enterLogPanelUI.class));
+        optionsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        toggleButton.setActionListener(e -> {
+        // Create the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        // Add "Toggle" option
+        JMenuItem toggleItem = new JMenuItem("Original log");
+        toggleItem.addActionListener(e -> {
             if (isShowingLog[0]) {
                 logLabel.setText(fullLog);
             } else {
@@ -70,31 +72,48 @@ public class enterLogPanelUI {
                 }
             });
         });
+        popupMenu.add(toggleItem);
 
-        // Create the "Show in Logcat" button
-        JLabel showInLogcatButton = createActionButton(); // the method returning a JLabel with logcatIcon
-        String timestamp = extractTimestamp(log);         // get timestamp for showInLogcat
-        showInLogcatButton.addMouseListener(new MouseAdapter() {
+        // Add "Show in Logcat" option
+        JMenuItem showInLogcatItem = new JMenuItem("Show in Logcat");
+        String timestamp = extractTimestamp(log);
+        showInLogcatItem.addActionListener(e -> showInLogcat(timestamp));
+        popupMenu.add(showInLogcatItem);
+
+        // Add "Copy" option
+        JMenuItem copyItem = new JMenuItem("Copy");
+        copyItem.addActionListener(e -> {
+            if (isShowingLog[0]) {
+                copyToClipboard(log);
+            } else {
+                StringSelection selection = new StringSelection(fullLog);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(selection, null);
+            }
+        });
+        popupMenu.add(copyItem);
+
+        // Add "Copy Timestamp" option
+        JMenuItem copyTimestampItem = new JMenuItem("Copy Timestamp");
+        copyTimestampItem.addActionListener(e -> {
+            StringSelection selection = new StringSelection(timestamp);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(selection, null);
+        });
+        popupMenu.add(copyTimestampItem);
+
+        // Show the popup menu when the options label is clicked
+        optionsLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                showInLogcat(timestamp);
+                popupMenu.show(optionsLabel, e.getX(), e.getY());
             }
         });
 
-        // Put BOTH buttons in a single panel with horizontal layout
-        JPanel leftButtonsPanel = new JPanel();
-        leftButtonsPanel.setLayout(new BoxLayout(leftButtonsPanel, BoxLayout.X_AXIS));
-        leftButtonsPanel.setOpaque(false);
-
-        // Add the toggle button, some spacing, then the logcat button
-        leftButtonsPanel.add(toggleButton);
-        leftButtonsPanel.add(Box.createHorizontalStrut(5));
-        leftButtonsPanel.add(showInLogcatButton);
-
-        // Create a wrapper panel to hold (leftButtonsPanel) on the WEST, and (logLabel) in CENTER
+        // Create a wrapper panel to hold (optionsLabel) on the WEST, and (logLabel) in CENTER
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.setOpaque(false);
-        wrapper.add(leftButtonsPanel, BorderLayout.WEST);
+        wrapper.add(optionsLabel, BorderLayout.WEST);
         wrapper.add(logLabel, BorderLayout.CENTER);
 
         // Add the wrapper to entryPanel
@@ -116,52 +135,14 @@ public class enterLogPanelUI {
             }
         });
 
-        // MouseListener on the entryPanel for copying text if clicked outside the buttons
-        logLabel.addMouseListener(new MouseAdapter() {
+        // Add a ComponentListener to adjust the height based on the width
+        entryPanel.addComponentListener(new ComponentAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                // Convert the click point to the leftButtonsPanel coordinate space
-                Point pt = SwingUtilities.convertPoint(entryPanel, e.getPoint(), leftButtonsPanel);
-                if (!leftButtonsPanel.contains(pt)) {
-                    if (isShowingLog[0]) {
-                        copyToClipboard(log);
-                    } else {
-                        StringSelection selection = new StringSelection(fullLog);
-                        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                        clipboard.setContents(selection, null);
-                    }
-                }
+            public void componentResized(ComponentEvent e) {
+                adjustTextAreaHeight(logLabel, entryPanel);
             }
         });
 
-        logLabel.addMouseListener(new MouseAdapter() {
-            private Balloon balloon;
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                Icon copyIcon = IconLoader.getIcon("AllIcons.Actions.Copy", getClass());
-                JLabel iconLabel = new JLabel(copyIcon);
-                JPanel balloonContent = new RoundedPanel(8, new JBColor(Gray._60, Gray._60));
-                balloonContent.setLayout(new BorderLayout());
-                balloonContent.add(iconLabel, BorderLayout.CENTER);
-                balloonContent.add(iconLabel);
-                balloon = JBPopupFactory.getInstance()
-                        .createBalloonBuilder(balloonContent)
-                        .setShowCallout(false)
-                        .setAnimationCycle(200)
-                        .setBorderInsets(JBUI.emptyInsets())
-                        .createBalloon();
-                int x = logLabel.getWidth() - logLabel.getWidth() - 70;
-                int y = logLabel.getHeight() / 2;
-                RelativePoint rp = new RelativePoint(logLabel, new Point(x, y));
-                balloon.show(rp, Balloon.Position.below);
-            }
-            @Override
-            public void mouseExited(MouseEvent e) {
-                if (balloon != null && !balloon.isDisposed()) {
-                    balloon.hide();
-                }
-            }
-        });
         return entryPanel;
     }
 
@@ -190,15 +171,6 @@ public class enterLogPanelUI {
         logLabel.setToolTipText(adviceMessage);
     }
 
-    // פונקציה ליצירת כפתורי פעולה (עם אייקון ו-tooltip)
-    private static JLabel createActionButton() {
-        Icon icon = IconLoader.getIcon("/icons/logcatIcon.svg", enterLogPanelUI.class);
-        JLabel button = new JLabel(icon);
-        button.setToolTipText("Show in Logcat");
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return button;
-    }
-
     // פונקציה להעתקת טקסט ללוח (עם ניסיונות לחלץ UID או אובייקט)
     private static void copyToClipboard(String text) {
         String uid = null;
@@ -224,77 +196,5 @@ public class enterLogPanelUI {
     // פונקציה לקריאה לניווט בלוגקאט לפי טיימסטאמפ
     private static void showInLogcat(String timestamp) {
         LogcatNavigator.navigateToLogcatEntry(timestamp);
-    }
-
-    // מחלקה פנימית לציור פאנל מעוגל
-    public static class RoundedPanel extends JPanel {
-        private final int cornerRadius;
-        private final Color backgroundColor;
-
-        public RoundedPanel(int cornerRadius, Color backgroundColor) {
-            this.cornerRadius = cornerRadius;
-            this.backgroundColor = backgroundColor;
-            setOpaque(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            Shape round = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), cornerRadius, cornerRadius);
-            g2.setColor(backgroundColor);
-            g2.fill(round);
-            g2.dispose();
-            super.paintComponent(g);
-        }
-
-        @Override
-        public Dimension getPreferredSize() {
-            Dimension size = super.getPreferredSize();
-            return new Dimension(size.width, Math.max(MIN_PANEL_HEIGHT, size.height));
-        }
-    }
-
-    // מחלקה פנימית לכפתור מעוגל המבוסס על RoundedPanel
-    public static class RoundedButton extends RoundedPanel {
-        private ActionListener actionListener;
-
-        public RoundedButton(Icon icon, int cornerRadius, Color backgroundColor, Dimension size) {
-            super(cornerRadius, backgroundColor);
-            setPreferredSize(size);
-            setLayout(new BorderLayout());
-            JLabel iconLabel = new JLabel(icon);
-            iconLabel.setHorizontalAlignment(JLabel.CENTER);
-            iconLabel.setVerticalAlignment(JLabel.CENTER);
-            add(iconLabel, BorderLayout.CENTER);
-            setBorder(BorderFactory.createEmptyBorder());
-            setOpaque(false);
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (actionListener != null) {
-                        actionListener.actionPerformed(new ActionEvent(
-                                RoundedButton.this,
-                                ActionEvent.ACTION_PERFORMED,
-                                "clicked"
-                        ));
-                    }
-                }
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    setBackground(backgroundColor.brighter());
-                    repaint();
-                }
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    setBackground(backgroundColor);
-                    repaint();
-                }
-            });
-        }
-
-        public void setActionListener(ActionListener listener) {
-            this.actionListener = listener;
-        }
     }
 }
