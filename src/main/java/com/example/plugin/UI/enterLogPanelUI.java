@@ -13,7 +13,6 @@ import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
-import java.awt.geom.RoundRectangle2D;
 
 public class enterLogPanelUI {
     private static final int MIN_PANEL_HEIGHT = 60;
@@ -36,7 +35,7 @@ public class enterLogPanelUI {
 
         final boolean[] isShowingLog = {true};
 
-        JLabel iconLabel = new JLabel(LogIconUtils.getLogIcon(log));
+        JLabel iconLabel = LogIconUtils.getLogIconLabel(log);
         iconLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JLabel optionsLabel = new JLabel(IconLoader.getIcon("AllIcons.Actions.More", enterLogPanelUI.class));

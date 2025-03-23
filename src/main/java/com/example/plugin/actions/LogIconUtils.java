@@ -1,18 +1,23 @@
 package com.example.plugin.actions;
 
+    import com.example.plugin.tools.TooltipLoader;
     import com.intellij.openapi.util.IconLoader;
-    import javax.swing.Icon;
+    import javax.swing.JLabel;
 
     public class LogIconUtils {
 
-        public static Icon getLogIcon(String log) {
+        public static JLabel getLogIconLabel(String log) {
+            JLabel iconLabel;
             if (log.contains("ERROR") || log.contains("FAILURE") || log.contains("No deep link")) {
-                return IconLoader.getIcon("AllIcons.Actions.QuickfixBulb", LogIconUtils.class);
-            }else if (log.contains("{") && log.contains("}")) {
-                return IconLoader.getIcon("AllIcons.FileTypes.Json", LogIconUtils.class);
+                iconLabel = new JLabel(IconLoader.getIcon("AllIcons.Actions.QuickfixBulb", LogIconUtils.class));
+                if(log.contains("FAILURE")){
+                    iconLabel.setToolTipText("check your DevKey");
+                }
+            } else if (log.contains("{") && log.contains("}")) {
+                iconLabel = new JLabel(IconLoader.getIcon("AllIcons.FileTypes.Json", LogIconUtils.class));
+            } else {
+                iconLabel = new JLabel(IconLoader.getIcon("AllIcons.General.BalloonInformation", LogIconUtils.class));
             }
-            else {
-                return IconLoader.getIcon("AllIcons.General.BalloonInformation", LogIconUtils.class);
-            }
+            return iconLabel;
         }
     }

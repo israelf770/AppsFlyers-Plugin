@@ -33,11 +33,9 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
     private static JPanel logPanel;
     public static JComboBox<String> deviceCombo;
-    private static Project currentProject;
 
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-        currentProject = project;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(Gray._30);
@@ -147,6 +145,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
                 case "Error Logs": // Handle Error Logs
                     showLogs.filterLogs("ERROR");
                     break;
+
             }
         });
         return filterCombo;

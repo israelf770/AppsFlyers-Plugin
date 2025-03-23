@@ -24,7 +24,7 @@ public class showLogs {
 
     // Check if a log entry matches the current filter
     public static boolean logMatchesFilter(String log, String filter) {
-        return filter == null || log.contains("/ " + filter);
+        return filter == null || log.contains(filter);
     }
     //Add or update a log entry and refresh the display
 

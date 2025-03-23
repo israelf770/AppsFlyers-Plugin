@@ -73,11 +73,7 @@ public class LogcatProcessHandler {
 
                 // Store the raw logcat entry for later lookup
                 rawLogcatEntries.put(date, text);
-                if (text.contains("FAILURE")) {
-                    processLog("ERROR", text, date);
-                } else if (text.contains("No deep link")) {
-                    processEventLog("ERROR", text, date);
-                } else if (text.contains("CONVERSION-")) {
+                if (text.contains("CONVERSION-")) {
                     processLog("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
                     processLog("LAUNCH", text, date);
@@ -98,6 +94,13 @@ public class LogcatProcessHandler {
         if (text.contains("result:")) {
             int resIndex = text.indexOf("result");
             String shortLog = date + " / " + type + ": " + text.substring(resIndex);
+            if(text.contains("FAILURE")){
+                String errorShortLog = date + " / " + type + ": " + text.substring(resIndex)+ " ERROR!";
+                SwingUtilities.invokeLater(() ->
+                        showLogs.showUpdateLogs(errorShortLog,type+ ": result", text)
+                );
+                return;
+            }
             SwingUtilities.invokeLater(() ->
                 showLogs.showUpdateLogs(shortLog,type + ": result", text)
             );
@@ -107,22 +110,20 @@ public class LogcatProcessHandler {
                     showLogs.showUpdateLogs(shortLog, type + " " + formattedLog, text)
             );
         }
-
-//        if (text.contains("FAILURE") || text.contains("No deep link")) {
-//            String errorLog = date + " / ERROR: " + text;
-//            SwingUtilities.invokeLater(() ->
-//                    showLogs.showUpdateLogs(errorLog, "ERROR", text)
-//            );
-//        }
-
     }
 
     private static void processEventLog(String type, String text, String date) {
-        String eventInfo = LogUtils.extractMessageFromJson(type, text);
+        String finalLog = LogUtils.extractMessageFromJson(type, text);
 
-        if (eventInfo != null) {
+        if (finalLog != null) {
+            if(finalLog.contains("No deep link")){
+                SwingUtilities.invokeLater(() -> {
+                    String errorLog = date + " / " + type+ ":\n" + finalLog+ " ERROR!";
+                    showLogs.showUpdateLogs(errorLog, type, text);
+                });
+            }
             SwingUtilities.invokeLater(() -> {
-                String logEntry = date + " / " + type + ":\n" + eventInfo;
+                String logEntry = date + " / " + type + ":\n" + finalLog;
                 showLogs.showUpdateLogs(logEntry, type, text);
             });
         }
