@@ -1,6 +1,6 @@
-package com.example.plugin.actions;
+package com.appsFlyers.plugin.actions;
 
-import com.example.plugin.UI.LogToolWindowFactory;
+import com.appsFlyers.plugin.UI.LogToolWindowFactory;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.util.IconLoader;

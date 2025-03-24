@@ -1,4 +1,4 @@
-package com.example.plugin.tools;
+package com.appsFlyers.plugin.tools;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,7 +1,7 @@
-package com.example.plugin.UI;
+package com.appsFlyers.plugin.UI;
 
-import com.example.plugin.LogcatNavigator;
-import com.example.plugin.actions.LogIconUtils;
+import com.appsFlyers.plugin.LogcatNavigator;
+import com.appsFlyers.plugin.actions.LogIconUtils;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.Gray;
 import com.intellij.util.ui.JBUI;

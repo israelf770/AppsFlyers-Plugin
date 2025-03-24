@@ -1,4 +1,4 @@
-package com.example.plugin.UI;
+package com.appsFlyers.plugin.UI;
 
 import javax.swing.*;
 import java.awt.*;

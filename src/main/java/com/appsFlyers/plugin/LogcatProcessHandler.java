@@ -1,4 +1,4 @@
-package com.example.plugin;
+package com.appsFlyers.plugin;
 
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -74,13 +74,13 @@ public class LogcatProcessHandler {
                 // Store the raw logcat entry for later lookup
                 rawLogcatEntries.put(date, text);
                 if (text.contains("CONVERSION-")) {
-                    processLog("CONVERSION", text, date);
+                    processUID("CONVERSION", text, date);
                 } else if (text.contains("LAUNCH-")) {
-                    processLog("LAUNCH", text, date);
+                    processUID("LAUNCH", text, date);
                 } else if (text.contains("INAPP-")) {
-                    processEventLog("EVENT", text, date);
+                    processObject("EVENT", text, date);
                 } else if (text.contains("deepLink")||text.contains("No deep link")) {
-                    processEventLog("DEEPLINK", text, date);
+                    processObject("DEEPLINK", text, date);
                 }
             }
         });
@@ -88,7 +88,7 @@ public class LogcatProcessHandler {
         return processHandler;
     }
 
-    private static void processLog(String type, String text, String date) {
+    private static void processUID(String type, String text, String date) {
         String formattedLog = LogUtils.extractMessageFromJson(type, text);
 
         if (text.contains("result:")) {
@@ -112,26 +112,21 @@ public class LogcatProcessHandler {
         }
     }
 
-    private static void processEventLog(String type, String text, String date) {
+    private static void processObject(String type, String text, String date) {
         String finalLog = LogUtils.extractMessageFromJson(type, text);
 
         if (finalLog != null) {
-            if(finalLog.contains("No deep link")){
+            if (finalLog.contains("No deep link")) {
                 SwingUtilities.invokeLater(() -> {
-                    String errorLog = date + " / " + type+ ":\n" + finalLog+ " ERROR!";
+                    String errorLog = date + " / " + type + ":\n" + finalLog + " ERROR!";
                     showLogs.showUpdateLogs(errorLog, type, text);
                 });
-            }else {
+            } else {
                 SwingUtilities.invokeLater(() -> {
                     String logEntry = date + " / " + type + ":\n" + finalLog;
                     showLogs.showUpdateLogs(logEntry, type, text);
                 });
             }
         }
-    }
-
-    // Method to retrieve stored raw logs by timestamp
-    public static Map<String, String> getRawLogcatEntries() {
-        return rawLogcatEntries;
     }
 }

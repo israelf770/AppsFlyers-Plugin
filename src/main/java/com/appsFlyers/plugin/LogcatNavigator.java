@@ -1,4 +1,4 @@
-package com.example.plugin;
+package com.appsFlyers.plugin;
 
 // Instead of reflection, try using the official API
 import com.intellij.openapi.diagnostic.Logger;
@@ -11,15 +11,12 @@ import com.intellij.ui.content.ContentManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.lang.reflect.Method;
 
 
 public class LogcatNavigator {
-    /**
-     * Navigates to the Android Studio Logcat window and filters for a specific timestamp
-     * @param timestamp The timestamp to search for in Logcat
-     */
+    /// Navigates to the Android Studio Logcat window and filters for a specific timestamp
+    /// @param timestamp The timestamp to search for in Logcat
     Logger logger = Logger.getInstance(LogcatNavigator.class);
 
     public static void navigateToLogcatEntry(String timestamp) {
@@ -89,9 +86,7 @@ public class LogcatNavigator {
                         } catch (Exception e) {
                             System.out.println("Could not set text directly: " + e.getMessage());
                         }
-                    } catch (NoSuchMethodException e) {
-                        throw new RuntimeException(e);
-                    } catch (SecurityException e) {
+                    } catch (NoSuchMethodException | SecurityException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -105,8 +100,7 @@ public class LogcatNavigator {
             return component;
         }
         // Search in child components
-        if (component instanceof Container) {
-            Container container = (Container) component;
+        if (component instanceof Container container) {
             for (Component child : container.getComponents()) {
                 Component result = findComponentByClassName(child, className);
                 if (result != null) {

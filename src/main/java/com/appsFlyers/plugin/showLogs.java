@@ -1,6 +1,6 @@
-package com.example.plugin;
-import com.example.plugin.UI.LogEntry;
-import com.example.plugin.UI.LogToolWindowFactory;
+package com.appsFlyers.plugin;
+import com.appsFlyers.plugin.UI.LogEntry;
+import com.appsFlyers.plugin.UI.LogToolWindowFactory;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;

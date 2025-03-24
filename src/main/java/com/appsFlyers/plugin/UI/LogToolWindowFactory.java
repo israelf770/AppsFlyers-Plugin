@@ -1,9 +1,10 @@
-package com.example.plugin.UI;
+package com.appsFlyers.plugin.UI;
 
-import com.example.plugin.GetInfo;
-import com.example.plugin.LogcatProcessHandler;
-import com.example.plugin.actions.*;
-import com.example.plugin.showLogs;
+import com.appsFlyers.plugin.GetInfo;
+import com.appsFlyers.plugin.LogcatProcessHandler;
+import com.appsFlyers.plugin.actions.ClearLogsAction;
+import com.appsFlyers.plugin.actions.RunAction;
+import com.appsFlyers.plugin.showLogs;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
@@ -26,7 +27,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.example.plugin.UI.enterLogPanelUI.adjustTextAreaHeight;
+import static com.appsFlyers.plugin.UI.enterLogPanelUI.adjustTextAreaHeight;
 
 // LogToolWindowFactory.java
 public class LogToolWindowFactory implements ToolWindowFactory {

@@ -1,6 +1,5 @@
-package com.example.plugin.actions;
+package com.appsFlyers.plugin.actions;
 
-    import com.example.plugin.tools.TooltipLoader;
     import com.intellij.openapi.util.IconLoader;
     import javax.swing.JLabel;
 

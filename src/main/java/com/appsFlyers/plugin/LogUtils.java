@@ -1,4 +1,4 @@
-package com.example.plugin;
+package com.appsFlyers.plugin;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -31,16 +31,20 @@ public class LogUtils {
 
             String jsonPart = logText.substring(jsonStartIndex, jsonEndIndex).trim();
 
-            if(type.equals("CONVERSION")||type.equals("LAUNCH")){
-            JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
-            return  jsonObject.has("uid") ? "UID: " + jsonObject.get("uid").getAsString() : "UID Not Found";
-            } else if (type.equals("EVENT")) {
-                JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
-                String eventName = jsonObject.has("eventName") ?  jsonObject.get("eventName").getAsString() : "Event Name Not Found";
-                String eventData = jsonObject.has("eventValue") ?  jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
-                return "\n{"+ "\n" +" \"eventName\":"+'\"'+eventName+'\"' +"," + "\n" + " \"eventValue\":"+'\"'+eventData +'\"'+ "\n" + "}";
-            } else if (type.equals("DEEPLINK")) {
-                return jsonPart;
+            switch (type) {
+                case "CONVERSION", "LAUNCH" -> {
+                    JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
+                    return jsonObject.has("uid") ? "UID: " + jsonObject.get("uid").getAsString() : "UID Not Found";
+                }
+                case "EVENT" -> {
+                    JsonObject jsonObject = JsonParser.parseString(jsonPart).getAsJsonObject();
+                    String eventName = jsonObject.has("eventName") ? jsonObject.get("eventName").getAsString() : "Event Name Not Found";
+                    String eventData = jsonObject.has("eventValue") ? jsonObject.get("eventValue").getAsString() : "Event Value Not Found";
+                    return "\n{" + "\n" + " \"eventName\":" + '\"' + eventName + '\"' + "," + "\n" + " \"eventValue\":" + '\"' + eventData + '\"' + "\n" + "}";
+                }
+                case "DEEPLINK" -> {
+                    return jsonPart;
+                }
             }
             return null;
 
