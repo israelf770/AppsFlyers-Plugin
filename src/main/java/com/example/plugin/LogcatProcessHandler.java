@@ -79,7 +79,7 @@ public class LogcatProcessHandler {
                     processLog("LAUNCH", text, date);
                 } else if (text.contains("INAPP-")) {
                     processEventLog("EVENT", text, date);
-                } else if (text.contains("deepLink")||text.contains("No deep link detected")) {
+                } else if (text.contains("deepLink")||text.contains("No deep link")) {
                     processEventLog("DEEPLINK", text, date);
                 }
             }
@@ -121,11 +121,12 @@ public class LogcatProcessHandler {
                     String errorLog = date + " / " + type+ ":\n" + finalLog+ " ERROR!";
                     showLogs.showUpdateLogs(errorLog, type, text);
                 });
+            }else {
+                SwingUtilities.invokeLater(() -> {
+                    String logEntry = date + " / " + type + ":\n" + finalLog;
+                    showLogs.showUpdateLogs(logEntry, type, text);
+                });
             }
-            SwingUtilities.invokeLater(() -> {
-                String logEntry = date + " / " + type + ":\n" + finalLog;
-                showLogs.showUpdateLogs(logEntry, type, text);
-            });
         }
     }
 
