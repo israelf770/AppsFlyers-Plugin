@@ -51,7 +51,7 @@ public class LogToolWindowFactory implements ToolWindowFactory {
 
         deviceCombo.addActionListener(e -> {
             String selectedDevice = (String) deviceCombo.getSelectedItem();
-            selectedDevice = ExtractParentheses(selectedDevice);
+            selectedDevice =  ExtractParentheses(selectedDevice);
 
             if (selectedDevice != null && !"No devices".equals(selectedDevice)
                     && !"Error retrieving devices".equals(selectedDevice)) {
